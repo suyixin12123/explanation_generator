@@ -8,7 +8,7 @@ import functools
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 # Dependency imports
 from tensorflow.app import flags
 #from absl import flags
