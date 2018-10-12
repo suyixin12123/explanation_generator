@@ -7,6 +7,8 @@ from __future__ import print_function
 import functools
 import os
 
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
 # Dependency imports
 from tensorflow.app import flags
 #from absl import flags
@@ -100,17 +102,16 @@ def main(argv):
         train_input_fn, eval_input_fn = ut.build_input_fns(FLAGS.data_dir,
                                                         FLAGS.batch_size)
     print("building the model...")
-    with tf.device(flags.run_device):
-        vae_model = vae(IMAGE_SHAPE)
-        model_fn = vae_model.model_fn
-        estimator = tf.estimator.Estimator(
-            model_fn,
-            params=params,
-            config=tf.estimator.RunConfig(
-                model_dir=FLAGS.model_dir,
-                save_checkpoints_steps=FLAGS.viz_steps,
-            ),
-        )
+    vae_model = vae(IMAGE_SHAPE)
+    model_fn = vae_model.model_fn
+    estimator = tf.estimator.Estimator(
+        model_fn,
+        params=params,
+        config=tf.estimator.RunConfig(
+            model_dir=FLAGS.model_dir,
+            save_checkpoints_steps=FLAGS.viz_steps,
+        ),
+    )
 
     for i in range(FLAGS.max_steps // FLAGS.viz_steps):
         print("training the round:", i*FLAGS.viz_steps)
