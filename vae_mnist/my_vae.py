@@ -74,6 +74,12 @@ flags.DEFINE_bool(
     default=False,
     help="If true, deletes existing `model_dir` directory.")
 
+flags.DEFINE_string(
+    "run_device",
+    default="/gpu:0",
+    help="the processor used for training, if on cpu only devices please specify /cpu:0")
+
+
 FLAGS = flags.FLAGS
 
 def main(argv):
@@ -93,16 +99,17 @@ def main(argv):
         train_input_fn, eval_input_fn = ut.build_input_fns(FLAGS.data_dir,
                                                         FLAGS.batch_size)
     print("building the model...")
-    vae_model = vae(IMAGE_SHAPE)
-    model_fn = vae_model.model_fn
-    estimator = tf.estimator.Estimator(
-        model_fn,
-        params=params,
-        config=tf.estimator.RunConfig(
-            model_dir=FLAGS.model_dir,
-            save_checkpoints_steps=FLAGS.viz_steps,
-        ),
-    )
+    with tf.device(flags.run_device):
+        vae_model = vae(IMAGE_SHAPE)
+        model_fn = vae_model.model_fn
+        estimator = tf.estimator.Estimator(
+            model_fn,
+            params=params,
+            config=tf.estimator.RunConfig(
+                model_dir=FLAGS.model_dir,
+                save_checkpoints_steps=FLAGS.viz_steps,
+            ),
+        )
 
     for i in range(FLAGS.max_steps // FLAGS.viz_steps):
         print("training the round:", i*FLAGS.viz_steps)
