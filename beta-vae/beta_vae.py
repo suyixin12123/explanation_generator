@@ -118,7 +118,9 @@ def main(argv):
     for i in range(FLAGS.max_steps // FLAGS.viz_steps):
         print("training the rounds:", i*FLAGS.viz_steps)
         estimator.train(train_input_fn, steps=FLAGS.viz_steps)
-        print(estimator.get_variable_names())
+        print("test:")
+        tf.print(vae_model.eval_posterior_sample, [vae_model.eval_posterior_sample])
+
         print("evaluating...")
         eval_results = estimator.evaluate(eval_input_fn)
         print(eval_results)
