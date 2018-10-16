@@ -9,3 +9,6 @@ and
 
 Understanding disentangling in $\beta $-VAE
 https://arxiv.org/pdf/1804.03599.pdf
+
+
+
