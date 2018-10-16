@@ -37,9 +37,6 @@ class vae:
         encoder = make_encoder(params["activation"],
                                 params["latent_size"],
                                 params["base_depth"])
-        evaluate_encoder = make_evaluation_encoder(params["activation"],
-                                params["latent_size"],
-                                params["base_depth"])
 
         decoder = make_decoder(params["activation"],
                                 params["latent_size"],
@@ -51,7 +48,8 @@ class vae:
         self.image_tile_summary("input", tf.to_float(features), rows=1, cols=16)
 
         approx_posterior = encoder(features)
-        evaluate_posterior,evaluate_net = evaluate_encoder(features)
+        evaluate_features = tf.expand_dim(features[0], 0) 
+        evaluate_posterior, evaluate_net = encoder(evaluate_features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
         decoder_likelihood = decoder(approx_posterior_sample)
         self.image_tile_summary(
