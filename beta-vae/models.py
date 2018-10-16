@@ -48,47 +48,7 @@ def make_encoder(activation, latent_size, base_depth):
             loc=net[..., :latent_size],
             scale_diag=tf.nn.softplus(net[..., latent_size:] +
                                     ut._softplus_inverse(1.0)),
-            name="code"), net
-    #encoder returns a multivariate normal distribution
-    return encoder
-
-
-def make_evaluation_encoder(activation, latent_size, base_depth):
-    """Creates the encoder function for evaluation that increase one dimension values a time.
-
-    Args:
-        activation: Activation function in hidden layers.
-        latent_size: The dimensionality of the encoding.
-        base_depth: The lowest depth for a layer.
-
-    Returns:
-        encoder: A `callable` mapping a `Tensor` of images to a
-        `tfd.Distribution` instance over encodings.
-    """
-    conv = functools.partial(
-        tf.keras.layers.Conv2D, padding="SAME", activation=activation)
-
-    encoder_net = tf.keras.Sequential([
-        conv(base_depth, 5, 1),
-        conv(base_depth, 5, 2),
-        conv(2 * base_depth, 5, 1),
-        conv(2 * base_depth, 5, 2),
-        conv(4 * latent_size, 7, padding="VALID"),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(2 * latent_size, activation=None),
-    ])
-    #output the 2 * latent_size because that first half used to generate mean, 
-    # the second half used to generate diagonic covariance matrixu
-    # the input image only contains one image
-    def encoder(image):
-        image = 2 * tf.cast(image[0], dtype=tf.float32) - 1
-        image = tf.expand_dims(image, 0)
-        net = encoder_net(image)
-        return tfd.MultivariateNormalDiag(
-            loc=net[..., :latent_size],
-            scale_diag=tf.nn.softplus(net[..., latent_size:] +
-                                    ut._softplus_inverse(1.0)),
-            name="evaluate_code"), net
+            name="code")
     #encoder returns a multivariate normal distribution
     return encoder
 

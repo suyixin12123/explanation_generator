@@ -1,4 +1,4 @@
-from models import make_encoder, make_decoder, make_mixture_prior, make_evaluation_encoder
+from models import make_encoder, make_decoder, make_mixture_prior
 import utilities as ut
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -47,10 +47,9 @@ class vae:
 
         self.image_tile_summary("input", tf.to_float(features), rows=1, cols=16)
 
-        approx_posterior, _ = encoder(features)
-        evaluate_features = tf.expand_dims(features[0], 0) 
-        evaluate_posterior, evaluate_net = encoder(evaluate_features)
+        approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
+        eval_posterior_sample = approx_posterior.sample(1)
         decoder_likelihood = decoder(approx_posterior_sample)
         self.image_tile_summary(
             "recon/sample",
@@ -104,13 +103,12 @@ class vae:
         return tf.estimator.EstimatorSpec(
             mode=mode,
             loss=loss,
-            train_op=train_op,
+            train_op=train_op, 
             eval_metric_ops={
                 "elbo": tf.metrics.mean(elbo),
-                #"elbo/importance_weighted": tf.metrics.mean(importance_weighted_elbo),
-                #"rate": tf.metrics.mean(avg_rate),
-                #"distortion": tf.metrics.mean(avg_distortion),
-                "evalue_posterior": tf.metrics.mean(evaluate_net),
+                "elbo/importance_weighted": tf.metrics.mean(importance_weighted_elbo),
+                "rate": tf.metrics.mean(avg_rate),
+                "distortion": tf.metrics.mean(avg_distortion),
             },
         )
 
