@@ -49,8 +49,9 @@ class vae:
 
         approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
+        approx_posterior_sample = tf.Print(approx_posterior_sample, [approx_posterior_sample], "sample:" ) 
         eval_posterior_sample = approx_posterior.sample(1)
-        eval_posterior_sample = tf.Print(eval_posterior_sample , [eval_posterior_sample ])
+        eval_posterior_sample = tf.Print(eval_posterior_sample , [eval_posterior_sample])
         decoder_likelihood = decoder(approx_posterior_sample)
         self.image_tile_summary(
             "recon/sample",
