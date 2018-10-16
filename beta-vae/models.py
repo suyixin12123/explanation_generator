@@ -83,9 +83,7 @@ def make_evaluation_encoder(activation, latent_size, base_depth):
     def encoder(image):
         image = 2 * tf.cast(image[0], dtype=tf.float32) - 1
         image = tf.expand_dims(image, 0)
-        print(image)
         net = encoder_net(image)
-        print(net)
         return tfd.MultivariateNormalDiag(
             loc=net[..., :latent_size],
             scale_diag=tf.nn.softplus(net[..., latent_size:] +
