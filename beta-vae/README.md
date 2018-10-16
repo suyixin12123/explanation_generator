@@ -1,5 +1,6 @@
 bata-vae
 
+
 implementation of:
  
 beta-vae: Learning basic visual concepts with a constrained variational framework
