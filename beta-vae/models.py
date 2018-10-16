@@ -48,7 +48,7 @@ def make_encoder(activation, latent_size, base_depth):
             loc=net[..., :latent_size],
             scale_diag=tf.nn.softplus(net[..., latent_size:] +
                                     ut._softplus_inverse(1.0)),
-            name="code")
+            name="code"), net
     #encoder returns a multivariate normal distribution
     return encoder
 
