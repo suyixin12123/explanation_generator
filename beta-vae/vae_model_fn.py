@@ -9,7 +9,6 @@ class vae:
 
     def __init__(self, IMAGE_SHAPE):
         self.IMAGE_SHAPE = IMAGE_SHAPE
-        self.eval_posterior_sample = None
 
     def image_tile_summary(self, name, tensor, rows=8, cols=8):
         tf.summary.image(name, ut.pack_images(tensor, rows, cols), max_outputs=1)
@@ -50,7 +49,8 @@ class vae:
 
         approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
-        self.eval_posterior_sample = approx_posterior.sample(1)
+        eval_posterior_sample = approx_posterior.sample(1)
+        eval_posterior_sample = tf.Print(eval_posterior_sample , [eval_posterior_sample ])
         decoder_likelihood = decoder(approx_posterior_sample)
         self.image_tile_summary(
             "recon/sample",

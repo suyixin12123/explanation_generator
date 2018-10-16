@@ -67,7 +67,7 @@ flags.DEFINE_string(
     default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "beta-vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
-    "viz_steps", default=50, help="Frequency at which to save visualizations.")
+    "viz_steps", default=5, help="Frequency at which to save visualizations.")
 flags.DEFINE_bool(
     "fake_data",
     default=False,
@@ -118,9 +118,6 @@ def main(argv):
     for i in range(FLAGS.max_steps // FLAGS.viz_steps):
         print("training the rounds:", i*FLAGS.viz_steps)
         estimator.train(train_input_fn, steps=FLAGS.viz_steps)
-        print("test:")
-        tf.print(vae_model.eval_posterior_sample, [vae_model.eval_posterior_sample])
-
         print("evaluating...")
         eval_results = estimator.evaluate(eval_input_fn)
         print(eval_results)
