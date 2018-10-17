@@ -1,7 +1,10 @@
 import tensorflow as tf
+import tensorflow_probability as tfp
 from six.moves import urllib
 import os
 import numpy as np
+
+tfd = tfp.distributions
 
 ROOT_PATH = "http://www.cs.toronto.edu/~larocheh/public/datasets/binarized_mnist/"
 FILE_TEMPLATE = "binarized_mnist_{split}.amat"
@@ -85,5 +88,32 @@ def build_input_fns(data_dir, batch_size):
 
 def generate_fake_representations(latent_size, steps):
     """Generate fake z representations that increase one dimension value step by step"""
+    # we assume that the representations are [-1, 1]
 
 
+
+
+
+def gen_eval_samples(eval_posterior, latent_size): 
+    """
+    Generate evaluation samples for decoder 
+    eval_posterior: tfd.MultivariateDiag distribution with \ 
+                    (1, latent size) 
+    return: tfd.MultivariateDiag distribution that changes each 
+            dimension 10 times respectively 
+    """
+
+    loc = eval_posterior.loc
+    var = eval_posterior.variance()
+    new_loc = tf.manip.tile(loc, [10*latent_size, 1])
+    loc_modify = np.array([[0.1*(i%10)-0.5 if int(i/10)==j else 0 for j in \
+                range(latent_size)] for i in range(latent_size*10)])
+    
+    new_loc = new_loc + loc_modify
+    new_distribution = tfd.MultivariateNormalDiag(
+        loc= new_loc,
+        scale_diag= var,
+        name="eval_code")
+
+    return new_distribution.sample()
+ 

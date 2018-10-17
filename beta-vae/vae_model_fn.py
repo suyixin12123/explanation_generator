@@ -49,10 +49,18 @@ class vae:
 
         approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
-        approx_posterior_sample = tf.Print(approx_posterior_sample, [approx_posterior_sample], "sample:" ) 
-        eval_posterior_sample = approx_posterior.sample(1)
-        eval_posterior_sample = tf.Print(eval_posterior_sample , [eval_posterior_sample])
+        """generate some samples that has differnt loc each dimension"""
+        eval_posterior = encoder(tf.expand_dims(features[0],0))
+        eval_samples = ut.gen_eval_samples(eval_posterior, params["latent_size"])
+
         decoder_likelihood = decoder(approx_posterior_sample)
+        eval_decoder_likelihood = decoder(eval_samples)
+
+        self.image_tile_summary(
+            "recon/eval_sample",
+            tf.to_float(eval_decoder_likelihood.sample()),
+            rows=10,
+            cols=16)
         self.image_tile_summary(
             "recon/sample",
             tf.to_float(decoder_likelihood.sample()[:3, :16]),
