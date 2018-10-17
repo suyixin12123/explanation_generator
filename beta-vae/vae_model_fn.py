@@ -50,8 +50,8 @@ class vae:
         approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
         """generate some samples that has differnt loc each dimension"""
-        if params["eval_sample_from_prior"]: 
-            eval_posterior = encoder(tf.expand_dims(features[0],0))
+        eval_posterior = encoder(tf.expand_dims(features[0],0))
+        if not params["eval_sample_from_prior"]: 
             eval_samples = ut.gen_eval_samples(eval_posterior, params["latent_size"])
         else:
             eval_samples = ut.gen_eval_samples(latent_prior, params["latent_size"])

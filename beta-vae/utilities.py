@@ -105,13 +105,17 @@ def gen_eval_samples(eval_posterior, latent_size):
     """
     loc = eval_posterior.loc
     var = eval_posterior.variance()
-    
+    if len(loc.shape) == 1:
+        loc = tf.expand_dims(loc, 0)
+        var = tf.expand_dims(var, 0)
+        
     new_var = tf.manip.tile(var, [10*latent_size, 1])
     new_loc = tf.manip.tile(loc, [10*latent_size, 1])
     loc_modify = np.array([[0.1*(i%10)-0.5 if int(i/10)==j else 0 for j in \
                 range(latent_size)] for i in range(latent_size*10)])
     
     new_loc = new_loc + loc_modify
+    new_loc = tf.Print(new_loc, [new_loc], "evaluation loc")
     new_distribution = tfd.MultivariateNormalDiag(
         loc= new_loc,
         scale_diag= new_var,
