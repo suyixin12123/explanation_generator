@@ -5,8 +5,9 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
-import os
+import os, sys
 
+sys.path.append(os.path.relpath("../func"))
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 # Dependency imports
@@ -15,7 +16,7 @@ from tensorflow.app import flags
 import numpy as np
 import tensorflow as tf
 import utilities as ut
-from vae_model_fn import vae 
+from ss_model_fn import vae 
 
 import warnings
 warnings.filterwarnings("ignore",category=DeprecationWarning)

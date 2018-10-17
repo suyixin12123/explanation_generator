@@ -5,8 +5,8 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
-import os
-
+import os, sys
+sys.path.append(os.path.relpath("../func"))
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 # Dependency imports
@@ -90,17 +90,7 @@ def main(argv):
     print("begin to training...")
     params = FLAGS.flag_values_dict()
     params["activation"] = getattr(tf.nn, params["activation"])
-    if FLAGS.delete_existing and tf.gfile.Exists(FLAGS.model_dir):
-        tf.logging.warn("Deleting old log directory at {}".format(FLAGS.model_dir))
-        tf.gfile.DeleteRecursively(FLAGS.model_dir)
-    tf.gfile.MakeDirs(FLAGS.model_dir)
-
-    print("preparing data...")
-    if FLAGS.fake_data:
-        train_input_fn, eval_input_fn = ut.build_fake_input_fns(IMAGE_SHAPE, FLAGS.batch_size)
-    else:
-        train_input_fn, eval_input_fn = ut.build_input_fns(FLAGS.data_dir,
-                                                        FLAGS.batch_size)
+    train_input_fn, eval_input_fn = ut.preparing_data_mnist(IMAGE_SHAPE, FLAGS)
     print("building the model...")
     vae_model = vae(IMAGE_SHAPE)
     model_fn = vae_model.model_fn
