@@ -61,11 +61,11 @@ flags.DEFINE_bool(
          "then you must also specify `mixture_components=1`.")
 flags.DEFINE_string(
     "data_dir",
-    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "vae/data"),
+    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "de_vae/data"),
     help="Directory where data is stored (if using real data).")
 flags.DEFINE_string(
     "model_dir",
-    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "vae/"),
+    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "de_vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
     "viz_steps", default=5, help="Frequency at which to save visualizations.")

@@ -103,13 +103,6 @@ def build_input_fns(data_dir, batch_size):
 
     return train_input_fn, eval_input_fn
 
-def generate_fake_representations(latent_size, steps):
-    """Generate fake z representations that increase one dimension value step by step"""
-    # we assume that the representations are [-1, 1]
-
-
-
-
 
 def gen_eval_samples(eval_posterior, latent_size): 
     """
@@ -132,7 +125,7 @@ def gen_eval_samples(eval_posterior, latent_size):
                 range(latent_size)] for i in range(latent_size*10)])
     
     new_loc = new_loc + loc_modify
-    new_loc = tf.Print(new_loc, [new_loc], "evaluation loc")
+    #new_loc = tf.Print(new_loc, [new_loc], "evaluation loc")
     new_distribution = tfd.MultivariateNormalDiag(
         loc= new_loc,
         scale_diag= new_var,

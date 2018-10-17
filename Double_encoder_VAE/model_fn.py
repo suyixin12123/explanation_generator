@@ -72,10 +72,15 @@ class vae:
         tf.summary.scalar("distortion", avg_distortion)
 
         if params["analytic_kl"]:
-            rate = tfd.kl_divergence(approx_posterior, latent_prior)
+            rate1 = tfd.kl_divergence(approx_posterior1, latent_prior)
+            rate2 = tfd.kl_divergence(approx_posterior2, latent_prior)
         else:
-            rate = (approx_posterior.log_prob(approx_posterior_sample)
+            rate1 = (approx_posterior1.log_prob(approx_posterior_sample)
                     - latent_prior.log_prob(approx_posterior_sample))
+            rate2 = (approx_posterior2.log_prob(approx_posterior_sample)
+                    - latent_prior.log_prob(approx_posterior_sample))
+        
+        rate = rate1 + rate2
         avg_rate = tf.reduce_mean(rate)
         tf.summary.scalar("rate", avg_rate)
 
