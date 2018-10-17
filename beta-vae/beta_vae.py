@@ -44,7 +44,7 @@ flags.DEFINE_integer(
     "n_samples", default=16, help="Number of samples to use in encoding.")
 flags.DEFINE_integer(
     "mixture_components",
-    default=100,
+    default=1,
     help="Number of mixture components to use in the prior. Each component is "
          "a diagonal normal distribution. The parameters of the components are "
          "intialized randomly, and then learned along with the rest of the "
@@ -52,7 +52,7 @@ flags.DEFINE_integer(
          "set to `1`.")
 flags.DEFINE_bool(
     "analytic_kl",
-    default=False,
+    default=True,
     help="Whether or not to use the analytic version of the KL. When set to "
          "False the E_{Z~q(Z|X)}[log p(Z)p(X|Z) - log q(Z|X)] form of the ELBO "
          "will be used. Otherwise the -KL(q(Z|X) || p(Z)) + "
@@ -83,6 +83,10 @@ flags.DEFINE_string(
     help="the processor used for training, if on cpu only devices please specify /cpu:0")
 flags.DEFINE_float(
     "beta", default=4, help="The beta value in beta-vae. Usually is >> 1.")
+flags.DEFINE_bool(
+    "eval_sample_from_prior",
+    default=True,
+    help="sample the evaluation case from prior.")
 
 FLAGS = flags.FLAGS
 

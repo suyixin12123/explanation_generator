@@ -50,8 +50,11 @@ class vae:
         approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
         """generate some samples that has differnt loc each dimension"""
-        eval_posterior = encoder(tf.expand_dims(features[0],0))
-        eval_samples = ut.gen_eval_samples(eval_posterior, params["latent_size"])
+        if params["eval_sample_from_prior"]: 
+            eval_posterior = encoder(tf.expand_dims(features[0],0))
+            eval_samples = ut.gen_eval_samples(eval_posterior, params["latent_size"])
+        else:
+            eval_samples = ut.gen_eval_samples(latent_prior, params["latent_size"])
 
         decoder_likelihood = decoder(approx_posterior_sample)
         eval_decoder_likelihood = decoder(eval_samples)

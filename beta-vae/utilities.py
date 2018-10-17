@@ -3,6 +3,7 @@ import tensorflow_probability as tfp
 from six.moves import urllib
 import os
 import numpy as np
+from models import make_mixture_prior
 
 tfd = tfp.distributions
 
@@ -94,7 +95,7 @@ def generate_fake_representations(latent_size, steps):
 
 
 
-def gen_eval_samples(eval_posterior, latent_size, sample_from_normal): 
+def gen_eval_samples(eval_posterior, latent_size): 
     """
     Generate evaluation samples for decoder 
     eval_posterior: tfd.MultivariateDiag distribution with \ 
@@ -102,12 +103,8 @@ def gen_eval_samples(eval_posterior, latent_size, sample_from_normal):
     return: tfd.MultivariateDiag distribution that changes each 
             dimension 10 times respectively 
     """
-    if sample_from_normal:
-        loc = tf.constant([0. for i in range(latent_size)])
-        var = tf.constant([1. for i in range(latent_size)]) 
-    else:
-        loc = eval_posterior.loc
-        var = eval_posterior.variance()
+    loc = eval_posterior.loc
+    var = eval_posterior.variance()
     
     new_var = tf.manip.tile(var, [10*latent_size, 1])
     new_loc = tf.manip.tile(loc, [10*latent_size, 1])
@@ -121,4 +118,5 @@ def gen_eval_samples(eval_posterior, latent_size, sample_from_normal):
         name="eval_code")
 
     return new_distribution.sample()
- 
+
+
