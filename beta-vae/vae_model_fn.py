@@ -80,7 +80,7 @@ class vae:
         if params["analytic_kl"]:
             rate = params["beta"] * tfd.kl_divergence(approx_posterior, latent_prior)
         else:
-            rate = (approx_posterior.log_prob(approx_posterior_sample)
+            rate = params["beta"] * (approx_posterior.log_prob(approx_posterior_sample)
                     - latent_prior.log_prob(approx_posterior_sample))
         avg_rate = tf.reduce_mean(rate)
         tf.summary.scalar("rate", avg_rate)
