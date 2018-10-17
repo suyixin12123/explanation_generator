@@ -58,9 +58,9 @@ class vae:
 
         self.image_tile_summary(
             "recon/eval_sample",
-            tf.to_float(eval_decoder_likelihood.sample()),
-            rows=10,
-            cols=16)
+            eval_decoder_likelihood.mean(),
+            rows=16,
+            cols=10)
         self.image_tile_summary(
             "recon/sample",
             tf.to_float(decoder_likelihood.sample()[:3, :16]),

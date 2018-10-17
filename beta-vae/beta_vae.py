@@ -82,7 +82,7 @@ flags.DEFINE_string(
     default="/gpu:0",
     help="the processor used for training, if on cpu only devices please specify /cpu:0")
 flags.DEFINE_float(
-    "beta", default=10, help="The beta value in beta-vae. Usually is >> 1.")
+    "beta", default=4, help="The beta value in beta-vae. Usually is >> 1.")
 
 FLAGS = flags.FLAGS
 
