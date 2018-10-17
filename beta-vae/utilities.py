@@ -94,7 +94,7 @@ def generate_fake_representations(latent_size, steps):
 
 
 
-def gen_eval_samples(eval_posterior, latent_size): 
+def gen_eval_samples(eval_posterior, latent_size, sample_from_normal): 
     """
     Generate evaluation samples for decoder 
     eval_posterior: tfd.MultivariateDiag distribution with \ 
@@ -102,9 +102,14 @@ def gen_eval_samples(eval_posterior, latent_size):
     return: tfd.MultivariateDiag distribution that changes each 
             dimension 10 times respectively 
     """
-
-    loc = eval_posterior.loc
-    var = eval_posterior.variance()
+    if sample_from_normal:
+        loc = tf.constant([0. for i in range(latent_size)])
+        var = tf.constant([1. for i in range(latent_size)]) 
+    else:
+        loc = eval_posterior.loc
+        var = eval_posterior.variance()
+    
+    new_var = tf.manip.tile(var, [10*latent_size, 1])
     new_loc = tf.manip.tile(loc, [10*latent_size, 1])
     loc_modify = np.array([[0.1*(i%10)-0.5 if int(i/10)==j else 0 for j in \
                 range(latent_size)] for i in range(latent_size*10)])
@@ -112,7 +117,7 @@ def gen_eval_samples(eval_posterior, latent_size):
     new_loc = new_loc + loc_modify
     new_distribution = tfd.MultivariateNormalDiag(
         loc= new_loc,
-        scale_diag= var,
+        scale_diag= new_var,
         name="eval_code")
 
     return new_distribution.sample()

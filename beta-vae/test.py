@@ -1,8 +1,15 @@
 import numpy as np
+import tensorflow as tf
 latent_size = 16
-loc_modify = np.array([[i%10-5 if int(i/10)==j else 0 for j in range(latent_size)] for i in range(latent_size*10)])
-
-print(loc_modify)
+loc_modify = np.array([[(i%10)*0.1-0.5 if int(i/10)==j else 0 for j in range(latent_size)] for i in range(latent_size*10)])
+loc_modify = tf.constant(loc_modify)
+loc_normal = np.array([[0. for i in range(latent_size)] for j in range(10*latent_size)])
+loc_normal = tf.constant(loc_normal)
+loc = loc_modify + loc_normal
+sess = tf.Session()
+with sess.as_default():
+    print(loc.eval())
+print(loc)
 exit()
 
 
