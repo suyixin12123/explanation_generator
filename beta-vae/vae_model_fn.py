@@ -1,3 +1,5 @@
+import sys, os
+
 from models import make_encoder, make_decoder, make_mixture_prior
 import utilities as ut
 import tensorflow as tf
