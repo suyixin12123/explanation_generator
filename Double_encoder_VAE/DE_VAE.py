@@ -101,10 +101,10 @@ def main(argv):
     for i in range(FLAGS.max_steps // FLAGS.viz_steps):
         print("training the round:", i*FLAGS.viz_steps)
         estimator.train(train_input_fn, steps=FLAGS.viz_steps)
+        print("evaluating...")
+        eval_results = estimator.evaluate(eval_input_fn)
+        print("Evaluation_results:\n\t%s\n" % eval_results)
 
-    print("evaluating...")
-    eval_results = estimator.evaluate(eval_input_fn)
-    print("Evaluation_results:\n\t%s\n" % eval_results)
 
 if __name__ == "__main__":
     tf.app.run()
