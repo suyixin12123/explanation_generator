@@ -67,7 +67,7 @@ flags.DEFINE_string(
     default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
-    "viz_steps", default=5, help="Frequency at which to save visualizations.")
+    "viz_steps", default=200, help="Frequency at which to save visualizations.")
 flags.DEFINE_bool(
     "fake_data",
     default=False,
@@ -107,9 +107,9 @@ def main(argv):
         print("training the round:", i*FLAGS.viz_steps)
         estimator.train(train_input_fn, steps=FLAGS.viz_steps)
 
-    print("evaluating...")
-    eval_results = estimator.evaluate(eval_input_fn)
-    print("Evaluation_results:\n\t%s\n" % eval_results)
+        print("evaluating...")
+        eval_results = estimator.evaluate(eval_input_fn)
+        print("Evaluation_results:\n\t%s\n" % eval_results)
 
 if __name__ == "__main__":
     tf.app.run()
