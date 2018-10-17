@@ -34,11 +34,14 @@ class vae:
                 "Using `analytic_kl` is only supported when `mixture_components = 1` "
                 "since there's no closed form otherwise.")
 
-        encoder = make_encoder(params["activation"],
+        encoder1 = make_encoder(params["activation"],
+                                params["latent_size"],
+                                params["base_depth"])
+        encoder2 = make_encoder(params["activation"],
                                 params["latent_size"],
                                 params["base_depth"])
         decoder = make_decoder(params["activation"],
-                                params["latent_size"],
+                                params["latent_size"]*2,
                                 self.IMAGE_SHAPE,
                                 params["base_depth"])
         latent_prior = make_mixture_prior(params["latent_size"],
@@ -46,8 +49,11 @@ class vae:
 
         self.image_tile_summary("input", tf.to_float(features), rows=1, cols=16)
 
-        approx_posterior = encoder(features)
-        approx_posterior_sample = approx_posterior.sample(params["n_samples"])
+        approx_posterior1 = encoder1(features)
+        approx_posterior2 = encoder2(features)
+        approx_posterior_sample1 = approx_posterior1.sample(params["n_samples"])
+        approx_posterior_sample2 = approx_posterior2.sample(params["n_samples"])
+        approx_posterior_sample = tf.concat([approx_posterior_sample1, approx_posterior_sample2], 1)
         decoder_likelihood = decoder(approx_posterior_sample)
         self.image_tile_summary(
             "recon/sample",
