@@ -53,7 +53,7 @@ class vae:
         approx_posterior2 = encoder2(features)
         approx_posterior_sample1 = approx_posterior1.sample(params["n_samples"])
         approx_posterior_sample2 = approx_posterior2.sample(params["n_samples"])
-        approx_posterior_sample = tf.concat([approx_posterior_sample1, approx_posterior_sample2], 1)
+        approx_posterior_sample = tf.concat([approx_posterior_sample1, approx_posterior_sample2], 2)
         decoder_likelihood = decoder(approx_posterior_sample)
         self.image_tile_summary(
             "recon/sample",
@@ -75,10 +75,10 @@ class vae:
             rate1 = tfd.kl_divergence(approx_posterior1, latent_prior)
             rate2 = tfd.kl_divergence(approx_posterior2, latent_prior)
         else:
-            rate1 = (approx_posterior1.log_prob(approx_posterior_sample)
-                    - latent_prior.log_prob(approx_posterior_sample))
-            rate2 = (approx_posterior2.log_prob(approx_posterior_sample)
-                    - latent_prior.log_prob(approx_posterior_sample))
+            rate1 = (approx_posterior1.log_prob(approx_posterior_sample1)
+                    - latent_prior.log_prob(approx_posterior_sample1))
+            rate2 = (approx_posterior2.log_prob(approx_posterior_sample2)
+                    - latent_prior.log_prob(approx_posterior_sample2))
         
         rate = rate1 + rate2
         avg_rate = tf.reduce_mean(rate)
@@ -97,7 +97,8 @@ class vae:
 
         # Decode samples from the prior for visualization.
         prior_sample = tf.concat([latent_prior.sample(16), \
-                                    latent_prior.sample(16)],0)
+                                    latent_prior.sample(16)],1)
+        
         random_image = decoder(prior_sample)
         self.image_tile_summary(
             "random/sample", tf.to_float(random_image.sample()), rows=4, cols=4)
