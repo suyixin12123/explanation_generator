@@ -67,7 +67,7 @@ flags.DEFINE_string(
     default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "beta-vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
-    "viz_steps", default=50, help="Frequency at which to save visualizations.")
+    "viz_steps", default=100, help="Frequency at which to save visualizations.")
 flags.DEFINE_bool(
     "fake_data",
     default=False,
@@ -82,7 +82,7 @@ flags.DEFINE_string(
     default="/gpu:0",
     help="the processor used for training, if on cpu only devices please specify /cpu:0")
 flags.DEFINE_float(
-    "beta", default=100, help="The beta value in beta-vae. Usually is >> 1.")
+    "beta", default=10, help="The beta value in beta-vae. Usually is >> 1.")
 
 FLAGS = flags.FLAGS
 

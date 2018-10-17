@@ -78,14 +78,14 @@ class vae:
         tf.summary.scalar("distortion", avg_distortion)
 
         if params["analytic_kl"]:
-            rate = params["beta"] * tfd.kl_divergence(approx_posterior, latent_prior)
+            rate =  tfd.kl_divergence(approx_posterior, latent_prior)
         else:
-            rate = params["beta"] * (approx_posterior.log_prob(approx_posterior_sample)
+            rate =  (approx_posterior.log_prob(approx_posterior_sample)
                     - latent_prior.log_prob(approx_posterior_sample))
-        avg_rate = tf.reduce_mean(rate)
+        avg_rate = params["beta"] * tf.reduce_mean(rate)
         tf.summary.scalar("rate", avg_rate)
 
-        elbo_local = -(rate + distortion)
+        elbo_local = -(params["beta"] * rate + distortion)
 
         elbo = tf.reduce_mean(elbo_local)
         loss = -elbo
