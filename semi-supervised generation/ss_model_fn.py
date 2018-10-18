@@ -30,6 +30,8 @@ class vae:
         """
         del config
 
+        labels = tf.one_hot(labels, params["num_labels"])
+
         if params["analytic_kl"] and params["mixture_components"] != 1:
             raise NotImplementedError(
                 "Using `analytic_kl` is only supported when `mixture_components = 1` "
@@ -44,7 +46,7 @@ class vae:
                                 params["base_depth"])
         classifier = make_classifier_mlp(params["activation"],
                                 params["latent_size"],
-                                params["num_labels_mnist"])
+                                params["num_labels"])
         latent_prior = make_mixture_prior(params["latent_size"],
                                             params["mixture_components"])
 
@@ -53,6 +55,7 @@ class vae:
         approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
         decoder_likelihood = decoder(approx_posterior_sample)
+        classifier_logits = classifier(tf.reduce_mean(approx_posterior_sample, 0))
         self.image_tile_summary(
             "recon/sample",
             tf.to_float(decoder_likelihood.sample()[:3, :16]),
@@ -77,10 +80,19 @@ class vae:
         avg_rate = tf.reduce_mean(rate)
         tf.summary.scalar("rate", avg_rate)
 
+        classification_loss = tf.nn.softmax_cross_entropy_with_logits_v2(
+            labels=labels,
+            logits=classifier_logits,
+            name="classification_loss"
+        )
+        avg_classification_loss = tf.reduce_mean(classification_loss)
+        tf.summary.scalar("classification loss", avg_classification_loss)
+
+
         elbo_local = -(rate + distortion)
 
         elbo = tf.reduce_mean(elbo_local)
-        loss = -elbo
+        loss = -elbo + avg_classification_loss
         tf.summary.scalar("elbo", elbo)
 
         importance_weighted_elbo = tf.reduce_mean(
@@ -110,6 +122,7 @@ class vae:
                 "elbo": tf.metrics.mean(elbo),
                 "elbo/importance_weighted": tf.metrics.mean(importance_weighted_elbo),
                 "rate": tf.metrics.mean(avg_rate),
+                "classification_loss": tf.metrics.mean(avg_classification_loss),
                 "distortion": tf.metrics.mean(avg_distortion),
             },
         )

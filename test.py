@@ -8,11 +8,8 @@ train, test= tf.keras.datasets.fashion_mnist.load_data()
 train_dataset = tf.data.Dataset.from_tensor_slices((train[0], train[1]))
 train_dataset = train_dataset.batch(32)
 
-train_data = train_dataset.shuffle(1000).repeat().batch(32)
-def _parser(s):
-    reshaped = tf.reshape(s, [28,28, 1])
 
-print(train_data)
+print(train[1])
 
 exit()
 

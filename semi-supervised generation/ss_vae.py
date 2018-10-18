@@ -65,10 +65,10 @@ flags.DEFINE_string(
     help="Directory where data is stored (if using real data).")
 flags.DEFINE_string(
     "model_dir",
-    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "vae/"),
+    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "ss_vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
-    "viz_steps", default=5, help="Frequency at which to save visualizations.")
+    "viz_steps", default=100, help="Frequency at which to save visualizations.")
 flags.DEFINE_bool(
     "fake_data",
     default=False,
@@ -77,10 +77,12 @@ flags.DEFINE_bool(
     "delete_existing",
     default=False,
     help="If true, deletes existing `model_dir` directory.")
+flags.DEFINE_integer(
+    "num_labels", default=10, help="number of labels in dataset.")
 
 flags.DEFINE_string(
     "dataset",
-    default="mnist",
+    default="fashion_mnist",
     help="choose dataset to train, current support:  \
           *. mnist    \
           *. fasion_mnist")
@@ -93,7 +95,7 @@ def main(argv):
     print("begin to training...")
     params = FLAGS.flag_values_dict()
     params["activation"] = getattr(tf.nn, params["activation"])
-    train_input_fn, eval_input_fn = ut.preparing_data(FLAGS)
+    train_input_fn, eval_input_fn = ut.preparing_data_image(FLAGS)
 
     print("building the model...")
     vae_model = vae(IMAGE_SHAPE)
@@ -111,9 +113,9 @@ def main(argv):
         print("training the round:", i*FLAGS.viz_steps)
         estimator.train(train_input_fn, steps=FLAGS.viz_steps)
 
-    print("evaluating...")
-    eval_results = estimator.evaluate(eval_input_fn)
-    print("Evaluation_results:\n\t%s\n" % eval_results)
+        print("evaluating...")
+        eval_results = estimator.evaluate(eval_input_fn)
+        print("Evaluation_results:\n\t%s\n" % eval_results)
 
 if __name__ == "__main__":
     tf.app.run()

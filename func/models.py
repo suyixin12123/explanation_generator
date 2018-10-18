@@ -138,17 +138,13 @@ def make_classifier_mlp(activation, latent_size, output_class_num):
         classifier: A `callable` mapping a `Tensor` of encodings to a
         logits with dimension of number of class. 
     """
-
     classifier_net = tf.keras.Sequential([
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(2 * latent_size, activation=activation),
-        tf.keras.layers.Dense(latent_size, activation=activation),
-        tf.keras.layers.Dense(output_class_num, activation=tf.nn.softmax),
-
+        tf.keras.layers.Dense(128, activation=activation),
+        tf.keras.layers.Dense(10, activation=None),
     ])
  
     def classifier(codes):
-        codes = tf.reshape(codes, (-1, 1, 1, latent_size))
         logits = classifier_net(codes)
         return logits
     return classifier 
