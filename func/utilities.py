@@ -3,12 +3,33 @@ import tensorflow_probability as tfp
 from six.moves import urllib
 import os
 import numpy as np
-from models import make_mixture_prior
 
 tfd = tfp.distributions
 
 ROOT_PATH = "http://www.cs.toronto.edu/~larocheh/public/datasets/binarized_mnist/"
 FILE_TEMPLATE = "binarized_mnist_{split}.amat"
+
+
+def preparing_data_image(FLAGS):
+
+    dataset_dict = {}
+    dataset_dict["fashion_mnist"] = tf.keras.datasets.fashion_mnist
+    dataset_dict['mnist'] = tf.keras.datasets.mnist
+
+    (train_images, train_labels), (test_images, test_labels) = \
+            dataset_dict[FLAGS.dataset].load_data()
+    
+    train_images = tf.manip.reshape(train_images, [-1, 28, 28, 1]) /255
+    test_images = tf.manip.reshape(test_images, [-1, 28, 28, 1]) /255
+    training_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels))
+    training_dataset = training_dataset.shuffle(50000).repeat().batch(FLAGS.batch_size)
+    train_input_fn = lambda: training_dataset.make_one_shot_iterator().get_next()
+
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels))
+    test_dataset = test_dataset.batch(FLAGS.batch_size) 
+    test_input_fn = lambda: test_dataset.make_one_shot_iterator().get_next()
+
+    return train_input_fn, test_input_fn
 
 
 

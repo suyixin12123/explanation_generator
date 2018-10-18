@@ -1,4 +1,4 @@
-from models import make_encoder, make_decoder, make_mixture_prior
+from models import make_encoder, make_decoder, make_mixture_prior, make_classifier_mlp
 import utilities as ut
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -19,7 +19,8 @@ class vae:
 
         Arguments:
             features: The input features for the estimator.
-            labels: The labels, unused here.
+            labels: The labels, some of them are used as semisupervised
+                    learning.
             mode: Signifies whether it is train or test or predict.
             params: Some hyperparameters as a dictionary.
             config: The RunConfig, unused here.
@@ -27,7 +28,7 @@ class vae:
         Returns:
             EstimatorSpec: A tf.estimator.EstimatorSpec instance.
         """
-        del labels, config
+        del config
 
         if params["analytic_kl"] and params["mixture_components"] != 1:
             raise NotImplementedError(
@@ -41,6 +42,9 @@ class vae:
                                 params["latent_size"],
                                 self.IMAGE_SHAPE,
                                 params["base_depth"])
+        classifier = make_classifier_mlp(params["activation"],
+                                params["latent_size"],
+                                params["num_labels_mnist"])
         latent_prior = make_mixture_prior(params["latent_size"],
                                             params["mixture_components"])
 

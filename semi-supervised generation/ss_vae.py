@@ -79,9 +79,11 @@ flags.DEFINE_bool(
     help="If true, deletes existing `model_dir` directory.")
 
 flags.DEFINE_string(
-    "run_device",
-    default="/gpu:0",
-    help="the processor used for training, if on cpu only devices please specify /cpu:0")
+    "dataset",
+    default="mnist",
+    help="choose dataset to train, current support:  \
+          *. mnist    \
+          *. fasion_mnist")
 
 
 FLAGS = flags.FLAGS
@@ -91,17 +93,8 @@ def main(argv):
     print("begin to training...")
     params = FLAGS.flag_values_dict()
     params["activation"] = getattr(tf.nn, params["activation"])
-    if FLAGS.delete_existing and tf.gfile.Exists(FLAGS.model_dir):
-        tf.logging.warn("Deleting old log directory at {}".format(FLAGS.model_dir))
-        tf.gfile.DeleteRecursively(FLAGS.model_dir)
-    tf.gfile.MakeDirs(FLAGS.model_dir)
+    train_input_fn, eval_input_fn = ut.preparing_data(FLAGS)
 
-    print("preparing data...")
-    if FLAGS.fake_data:
-        train_input_fn, eval_input_fn = ut.build_fake_input_fns(IMAGE_SHAPE, FLAGS.batch_size)
-    else:
-        train_input_fn, eval_input_fn = ut.build_input_fns(FLAGS.data_dir,
-                                                        FLAGS.batch_size)
     print("building the model...")
     vae_model = vae(IMAGE_SHAPE)
     model_fn = vae_model.model_fn

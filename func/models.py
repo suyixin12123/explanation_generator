@@ -125,4 +125,32 @@ def make_mixture_prior(latent_size, mixture_components):
         mixture_distribution=tfd.Categorical(logits=mixture_logits),
         name="prior")
 
+def make_classifier_mlp(activation, latent_size, output_class_num):
+    """Creates the classifier function using mlp model, it will
+        use the output of the encoder as the input.
+
+    Args:
+        activation: Activation function in hidden layers.
+        latent_size: Dimensionality of the encoding.
+        output_class: The output image shape.
+
+    Returns:
+        classifier: A `callable` mapping a `Tensor` of encodings to a
+        logits with dimension of number of class. 
+    """
+
+    classifier_net = tf.keras.Sequential([
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(2 * latent_size, activation=activation),
+        tf.keras.layers.Dense(latent_size, activation=activation),
+        tf.keras.layers.Dense(output_class_num, activation=tf.nn.softmax),
+
+    ])
+ 
+    def classifier(codes):
+        codes = tf.reshape(codes, (-1, 1, 1, latent_size))
+        logits = classifier_net(codes)
+        return logits
+    return classifier 
+
 
