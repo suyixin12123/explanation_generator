@@ -1,4 +1,4 @@
-from models import make_encoder, make_decoder, make_mixture_prior, make_classifier_mlp
+from models import make_encoder, make_decoder_joint_input, make_mixture_prior, make_classifier_cnn
 import utilities as ut
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -40,12 +40,13 @@ class vae:
         encoder = make_encoder(params["activation"],
                                 params["latent_size"],
                                 params["base_depth"])
-        decoder = make_decoder(params["activation"],
+        decoder = make_decoder_joint_input(params["activation"],
                                 params["latent_size"],
                                 self.IMAGE_SHAPE,
                                 params["base_depth"])
-        classifier = make_classifier_mlp(params["activation"],
+        classifier = make_classifier_cnn(params["activation"],
                                 params["latent_size"],
+                                params["base_depth"],
                                 params["num_labels"])
         latent_prior = make_mixture_prior(params["latent_size"],
                                             params["mixture_components"])
@@ -54,8 +55,16 @@ class vae:
 
         approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample(params["n_samples"])
-        decoder_likelihood = decoder(approx_posterior_sample)
-        classifier_logits = classifier(tf.reduce_mean(approx_posterior_sample, 0))
+        """
+        the first one the input is latent reprentation
+        the second one the input is image
+        """
+        #classifier_logits = classifier(tf.reduce_mean(approx_posterior_sample, 0))
+        code_proterior = classifier(features)
+        code_sample = code_proterior.sample(params["n_samples"])
+        code_sample = tf.one_hot(code_sample, params["num_labels"])
+        decoder_likelihood = decoder(approx_posterior_sample, \
+            code_sample, params["num_labels"])
         self.image_tile_summary(
             "recon/sample",
             tf.to_float(decoder_likelihood.sample()[:3, :16]),
@@ -80,11 +89,10 @@ class vae:
         avg_rate = tf.reduce_mean(rate)
         tf.summary.scalar("rate", avg_rate)
 
-        classification_loss = tf.nn.softmax_cross_entropy_with_logits_v2(
-            labels=labels,
-            logits=classifier_logits,
-            name="classification_loss"
-        )
+
+        classification_loss = code_proterior.cross_entropy(
+            tfd.Categorical(logits=labels)) 
+        
         avg_classification_loss = tf.reduce_mean(classification_loss)
         tf.summary.scalar("classification loss", avg_classification_loss)
 
@@ -101,7 +109,8 @@ class vae:
         tf.summary.scalar("elbo/importance_weighted", importance_weighted_elbo)
 
         # Decode samples from the prior for visualization.
-        random_image = decoder(latent_prior.sample(16))
+        random_image = decoder(latent_prior.sample(16), \
+            tf.one_hot([2 for i in range(16)], params["num_labels"]), params["num_labels"])
         self.image_tile_summary(
             "random/sample", tf.to_float(random_image.sample()), rows=4, cols=4)
         self.image_tile_summary("random/mean", random_image.mean(), rows=4, cols=4)
@@ -126,5 +135,3 @@ class vae:
                 "distortion": tf.metrics.mean(avg_distortion),
             },
         )
-
-

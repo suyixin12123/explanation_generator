@@ -48,10 +48,9 @@ def make_encoder(activation, latent_size, base_depth):
             loc=net[..., :latent_size],
             scale_diag=tf.nn.softplus(net[..., latent_size:] +
                                     ut._softplus_inverse(1.0)),
-            name="code")
+            name="latent_representation")
     #encoder returns a multivariate normal distribution
     return encoder
-
 
 def make_decoder(activation, latent_size, output_shape, base_depth):
     """Creates the decoder function.
@@ -95,6 +94,54 @@ def make_decoder(activation, latent_size, output_shape, base_depth):
 
     return decoder
 
+
+def make_decoder_joint_input(activation, latent_size, output_shape, base_depth):
+    """Creates the decoder function.
+
+    Args:
+        activation: Activation function in hidden layers.
+        latent_size: Dimensionality of the encoding.
+        output_shape: The output image shape.
+        base_depth: Smallest depth for a layer.
+
+    Returns:
+        decoder: A `callable` mapping a `Tensor` of encodings to a
+        `tfd.Distribution` instance over images.
+    """
+    deconv = functools.partial(
+        tf.keras.layers.Conv2DTranspose, padding="SAME", activation=activation)
+    conv = functools.partial(
+        tf.keras.layers.Conv2D, padding="SAME", activation=activation)
+
+    decoder_net = tf.keras.Sequential([
+        deconv(2 * base_depth, 7, padding="VALID"),
+        deconv(2 * base_depth, 5),
+        deconv(2 * base_depth, 5, 2),
+        deconv(base_depth, 5),
+        deconv(base_depth, 5, 2),
+        deconv(base_depth, 5),
+        conv(output_shape[-1], 5, activation=None),
+    ])
+
+    def decoder(codes, disentangled_vec, disentangled_vec_length):
+        original_shape = tf.shape(codes)
+        # Collapse the sample and batch dimension and convert to rank-4 tensor for
+        # use with a convolutional decoder network.
+        codes = tf.reshape(codes, (-1, 1, 1, latent_size))
+
+        disentangled_vec = tf.reshape(disentangled_vec, \
+                        (-1, 1, 1, disentangled_vec_length))
+        
+        decoder_input = tf.concat([codes, disentangled_vec], 3)
+        logits = decoder_net(decoder_input)
+        logits = tf.reshape(
+            logits, shape=tf.concat([original_shape[:-1], output_shape], axis=0))
+        return tfd.Independent(tfd.Normal(loc=logits, scale=1.),
+                            reinterpreted_batch_ndims=len(output_shape),
+                            name="image")
+
+    return decoder
+
 def make_mixture_prior(latent_size, mixture_components):
     """Creates the mixture of Gaussians prior distribution.
 
@@ -125,7 +172,7 @@ def make_mixture_prior(latent_size, mixture_components):
         mixture_distribution=tfd.Categorical(logits=mixture_logits),
         name="prior")
 
-def make_classifier_mlp(activation, latent_size, output_class_num):
+def make_classifier_mlp(activation, latent_size, num_class):
     """Creates the classifier function using mlp model, it will
         use the output of the encoder as the input.
 
@@ -136,17 +183,55 @@ def make_classifier_mlp(activation, latent_size, output_class_num):
 
     Returns:
         classifier: A `callable` mapping a `Tensor` of encodings to a
-        logits with dimension of number of class. 
+        Categorical distribution with dimension of number of class. 
     """
     classifier_net = tf.keras.Sequential([
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(128, activation=activation),
-        tf.keras.layers.Dense(10, activation=None),
+        tf.keras.layers.Dense(num_class, activation=None),
     ])
  
     def classifier(codes):
         logits = classifier_net(codes)
-        return logits
+        return tfd.Categorical(
+            logits=logits,
+            name="code"
+        )
     return classifier 
 
+
+def make_classifier_cnn(activation, latent_size, base_depth, num_class):
+    """Creates the classifier function that the input is the 
+        picture and the output is class.
+
+    Args:
+        activation: Activation function in hidden layers.
+        latent_size: The dimensionality of the encoding.
+        base_depth: The lowest depth for a layer.
+
+    Returns:
+        classifier: A `callable` mapping a `Tensor` of images to a
+        number-of-class dimension Categorical distributions over classifiers.
+    """
+    conv = functools.partial(
+        tf.keras.layers.Conv2D, padding="SAME", activation=activation)
+
+    classifier_net = tf.keras.Sequential([
+        conv(base_depth, 5, 1),
+        conv(base_depth, 5, 2),
+        conv(2 * base_depth, 5, 1),
+        conv(2 * base_depth, 5, 2),
+        conv(4 * latent_size, 7, padding="VALID"),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(num_class, activation=None),
+    ])
+
+    def classifier(images):
+        images = 2 * tf.cast(images, dtype=tf.float32) - 1
+        logits = classifier_net(images)
+        return tfd.Categorical(
+            logits=logits,
+            name="code")
+ 
+    return classifier 
 

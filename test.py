@@ -1,68 +1,18 @@
-import numpy as np
 import tensorflow as tf
-
-
-
-train, test= tf.keras.datasets.fashion_mnist.load_data()
-
-train_dataset = tf.data.Dataset.from_tensor_slices((train[0], train[1]))
-train_dataset = train_dataset.batch(32)
-
-
-print(train[1])
-
-exit()
-
-
-
-
-
-
-
-latent_size = 16
-loc_modify = np.array([[(i%10)*0.1-0.5 if int(i/10)==j else 0 for j in range(latent_size)] for i in range(latent_size*10)])
-loc_modify = tf.constant(loc_modify)
-
-loc_normal = np.array([[0. for i in range(latent_size)] for j in range(10*latent_size)])
-loc_normal = tf.constant(loc_normal)
-loc = loc_modify + loc_normal
-
-sess = tf.Session()
-with sess.as_default():
-    print(loc.eval())
-print(loc)
-exit()
-
-
-
-import numpy as np
-
 import tensorflow_probability as tfp
-import tensorflow as tf
+import numpy as np
 
 
 tfd = tfp.distributions
 
-mvn = tfd.MultivariateNormalDiag(
-    loc = [1., -1],
-    scale_diag=[1,2.]
-)
-new_loc = mvn.loc + [1., -1]
-new_var = mvn.variance()
-print(new_var)
-mvn1 = tfd.MultivariateNormalDiag(
-    loc = new_loc,
-    scale_diag=new_var
-)
-#mvn.loc = [2.,-2]
+p = [[0.6, 0.2,0.5,1.2],[0.01, 0.02 ,12, 0.01]]
+ohc = tfd.Categorical(logits=p)
+s = ohc.sample(16)
 
-a = tf.constant([[1,2,3,4,5]])
+label = [[1.,0,0,0],[0,0,1.,0]]
+ohl = tfd.Categorical(logits=label)
+a = ohc.cross_entropy(ohl)
 
-print(a)
-at = tf.transpose(a)
-print(at)
-att = tf.manip.tile(a, [10,1])
-print(att)
 sess = tf.Session()
 with sess.as_default():
-    print(att.eval())
+    print(sess.run(s))

@@ -67,11 +67,7 @@ flags.DEFINE_string(
     default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
-<<<<<<< HEAD
     "viz_steps", default=100, help="Frequency at which to save visualizations.")
-=======
-    "viz_steps", default=200, help="Frequency at which to save visualizations.")
->>>>>>> 50aab253f3a7946ae38d7be69e1d5a4fcd65b798
 flags.DEFINE_bool(
     "fake_data",
     default=False,
@@ -82,7 +78,7 @@ flags.DEFINE_bool(
     help="If true, deletes existing `model_dir` directory.")
 flags.DEFINE_string(
     "dataset",
-    default="fasion_mnist",
+    default="fashion_mnist",
     help="choose dataset to train, current support:  \
           *. mnist    \
           *. fasion_mnist")
