@@ -136,9 +136,15 @@ def make_decoder_joint_input(activation, latent_size, output_shape, base_depth):
         logits = decoder_net(decoder_input)
         logits = tf.reshape(
             logits, shape=tf.concat([original_shape[:-1], output_shape], axis=0))
+        """
         return tfd.Independent(tfd.Normal(loc=logits, scale=1.),
                             reinterpreted_batch_ndims=len(output_shape),
                             name="image")
+        """
+        return tfd.Independent(tfd.Bernoulli(logits=logits),
+                            reinterpreted_batch_ndims=len(output_shape),
+                            name="image")
+
 
     return decoder
 
