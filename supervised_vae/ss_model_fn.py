@@ -97,11 +97,10 @@ class vae:
         tf.summary.scalar("classification loss", avg_classification_loss)
 
 
-        elbo_local = -(params["kl_scalar_param"] * rate + \
-                       params["ae_scalar_param"] * distortion)
+        elbo_local = -(rate + distortion)
 
         elbo = tf.reduce_mean(elbo_local)
-        loss = -elbo + params["classifier_scaler_param"] * avg_classification_loss
+        loss = -elbo + avg_classification_loss
         tf.summary.scalar("elbo", elbo)
 
         importance_weighted_elbo = tf.reduce_mean(
