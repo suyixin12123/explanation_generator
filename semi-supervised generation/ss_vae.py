@@ -82,7 +82,7 @@ flags.DEFINE_integer(
 
 flags.DEFINE_string(
     "dataset",
-    default="fashion_mnist",
+    default="mnist",
     help="choose dataset to train, current support:  \
           *. mnist    \
           *. fasion_mnist")
