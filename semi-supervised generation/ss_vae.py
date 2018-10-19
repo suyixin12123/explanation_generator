@@ -87,8 +87,16 @@ flags.DEFINE_string(
           *. mnist    \
           *. fasion_mnist")
 
+flags.DEFINE_string(
+    "version",
+    default="ss_20181019_v1",
+    help="version of the work")
+
+
 
 FLAGS = flags.FLAGS
+
+print("version:", FLAGS.version)
 
 def main(argv):
     del argv  # unused
