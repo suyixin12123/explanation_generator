@@ -119,7 +119,8 @@ def main(argv):
     print("begin to training...")
     params = FLAGS.flag_values_dict()
     params["activation"] = getattr(tf.nn, params["activation"])
-    train_input_fn, eval_input_fn = ut.preparing_data_image(FLAGS)
+    train_input_fn, eval_input_fn = \
+        ut.preparing_data_image(FLAGS)
 
     print("building the model...")
     vae_model = vae(IMAGE_SHAPE)

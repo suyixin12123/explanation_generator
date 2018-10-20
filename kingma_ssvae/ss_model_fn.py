@@ -14,24 +14,20 @@ class vae:
         tf.summary.image(name, ut.pack_images(tensor, rows, cols), max_outputs=1)
 
 
-    def model_fn(self, features, labels, mode, params, config):
+    def model_fn(self, params, _labeled_features, _unlabeled_features, _labels):
         """Builds the model function for use in an estimator.
 
-        Arguments:
-            features: The input features for the estimator.
-            labels: The labels, some of them are used as semisupervised
-                    learning.
-            mode: Signifies whether it is train or test or predict.
-            params: Some hyperparameters as a dictionary.
-            config: The RunConfig, unused here.
-
-        Returns:
-            EstimatorSpec: A tf.estimator.EstimatorSpec instance.
         """
-        del config
-        labeled_features = features[:int(params["batch_size"]/4)]
-        unlabeled_features = features[int(params["batch_size"]/4):]
-        labels = tf.one_hot(labels[:int(params["batch_size"]/4)], params["num_labels"])
+        labeled_features = _labeled_features.get_next()
+        unlabeled_features = _unlabeled_features.get_next()
+        labels = _labels.get_next()        
+        #feature_placeholder_shape = tuple([None] + self.IMAGE_SHAPE)
+        
+        #labeled_features = tf.placeholder(tf.float32, shape=feature_placeholder_shape)
+        #unlabeled_features = tf.placeholder(tf.float32, shape=feature_placeholder_shape)
+        #labels = tf.placeholder(tf.int32, shape=(None,))
+        print(labels)
+        labels = tf.one_hot(labels, params["num_labels"])
 
         if params["analytic_kl"] and params["mixture_components"] != 1:
             raise NotImplementedError(
@@ -61,8 +57,8 @@ class vae:
         the second one the input is image
         """
         #classifier_logits = classifier(tf.reduce_mean(approx_posterior_sample, 0))
-        code_proterior = classifier(labeled_features)
-        code_sample = code_proterior.sample(params["n_samples"])
+        code_posterior = classifier(labeled_features)
+        code_sample = code_posterior.sample(params["n_samples"])
         code_sample = tf.one_hot(code_sample, params["num_labels"])
         decoder_likelihood = decoder(approx_posterior_sample, \
             code_sample, params["num_labels"])
@@ -78,7 +74,7 @@ class vae:
             cols=16)
 
         # `distortion` is just the negative log likelihood.
-        distortion = -decoder_likelihood.log_prob(features)
+        distortion = -decoder_likelihood.log_prob(labeled_features)
         avg_distortion = tf.reduce_mean(distortion)
         tf.summary.scalar("distortion", avg_distortion)
 
@@ -91,7 +87,7 @@ class vae:
         tf.summary.scalar("rate", avg_rate)
 
 
-        classification_loss = code_proterior.cross_entropy(
+        classification_loss = code_posterior.cross_entropy(
             tfd.Categorical(logits=labels)) 
         
         avg_classification_loss = tf.reduce_mean(classification_loss)
@@ -125,15 +121,6 @@ class vae:
         optimizer = tf.train.AdamOptimizer(learning_rate)
         train_op = optimizer.minimize(loss, global_step=global_step)
 
-        return tf.estimator.EstimatorSpec(
-            mode=mode,
-            loss=loss,
-            train_op=train_op,
-            eval_metric_ops={
-                "elbo": tf.metrics.mean(elbo),
-                "elbo/importance_weighted": tf.metrics.mean(importance_weighted_elbo),
-                "rate": tf.metrics.mean(avg_rate),
-                "classification_loss": tf.metrics.mean(avg_classification_loss),
-                "distortion": tf.metrics.mean(avg_distortion),
-            },
-        )
+
+
+        return train_op, loss 

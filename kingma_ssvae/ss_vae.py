@@ -7,7 +7,7 @@ from __future__ import print_function
 import functools
 import os, sys
 
-sys.path.append(os.path.relpath("../func"))
+#sys.path.append(os.path.relpath("../func"))
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 # Dependency imports
@@ -81,7 +81,7 @@ flags.DEFINE_string(
     help="Directory where data is stored (if using real data).")
 flags.DEFINE_string(
     "model_dir",
-    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "ss_vae/"),
+    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "kss_vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
     "viz_steps", default=100, help="Frequency at which to save visualizations.")
@@ -119,10 +119,28 @@ def main(argv):
     print("begin to training...")
     params = FLAGS.flag_values_dict()
     params["activation"] = getattr(tf.nn, params["activation"])
-    train_input_fn, eval_input_fn = ut.preparing_data_image(FLAGS)
+    train_limage, train_uimage, train_llabel, test_image, test_label = ut.preparing_data_image_semi(FLAGS)
 
     print("building the model...")
     vae_model = vae(IMAGE_SHAPE)
+
+
+    model_train_op, model_loss = vae_model.model_fn(params, train_limage, train_uimage, train_llabel)
+    sess = tf.Session()
+    
+    merged = tf.summary.merge_all()
+    train_writer = tf.summary.FileWriter(params["model_dir"], sess.graph)
+    sess.run(tf.global_variables_initializer())
+    for i in range(FLAGS.max_steps):
+        _, loss, summary = sess.run(
+            [model_train_op, model_loss, merged])
+        print("rount %5d, loss \t%8.2f" % (i, loss))
+        train_writer.add_summary(summary, i)
+
+
+
+
+    """
     model_fn = vae_model.model_fn
     estimator = tf.estimator.Estimator(
         model_fn,
@@ -140,7 +158,7 @@ def main(argv):
         print("evaluating...")
         eval_results = estimator.evaluate(eval_input_fn)
         print("Evaluation_results:\n\t%s\n" % eval_results)
-
+    """
 if __name__ == "__main__":
     tf.app.run()
 
