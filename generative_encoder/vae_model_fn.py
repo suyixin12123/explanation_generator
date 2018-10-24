@@ -47,7 +47,7 @@ class vae:
         self.image_tile_summary("input", tf.to_float(features), rows=1, cols=16)
 
         decoder_likelihood = decoder(latent_prior.sample(params["n_samples"]))
-        decoder_likelihood_sample = decoder_likelihood.sample(params["n_samples"])
+        decoder_likelihood_sample = decoder_likelihood.sample()
 
         encoder_posterior_fake = encoder(decoder_likelihood_sample)
         encoder_posterior_real = encoder(features)
@@ -65,7 +65,7 @@ class vae:
         # `distortion` is just the negative log likelihood.
         #distortion = -decoder_likelihood.log_prob(features)
         #avg_distortion = tf.reduce_mean(distortion)
-        tf.summary.scalar("distortion", avg_distortion)
+        #tf.summary.scalar("distortion", avg_distortion)
         real_fake_rate = tfd.kl_divergence(encoder_posterior_fake, encoder_posterior_real)
         if params["analytic_kl"]:
             rate = tfd.kl_divergence(encoder_posterior_real, latent_prior)
