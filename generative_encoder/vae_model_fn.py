@@ -61,12 +61,12 @@ class vae:
 
         self.image_tile_summary(
             "recon/sample",
-            tf.to_float(gen_likelihood.sample()[:3, :16]),
+            tf.to_float(decoder_likelihood.sample()[:3, :16]),
             rows=3,
             cols=16)
         self.image_tile_summary(
             "recon/mean",
-            gen_likelihood.mean()[:3, :16],
+            decoder_likelihood.mean()[:3, :16],
             rows=3,
             cols=16)
 
@@ -87,7 +87,7 @@ class vae:
         avg_rate = tf.reduce_mean(rate)
         tf.summary.scalar("rate", avg_rate)
 
-        elbo_local = -(rate + real_fake_rate + distortion)
+        elbo_local = -(rate + params["lambda"]*real_fake_rate + distortion)
 
         elbo = tf.reduce_mean(elbo_local)
         loss = -elbo
@@ -99,7 +99,7 @@ class vae:
         tf.summary.scalar("elbo/importance_weighted", importance_weighted_elbo)
 
         # Decode samples from the prior for visualization.
-        random_image = decoder(latent_prior.sample(16))
+        random_image = generator(latent_prior.sample(16))
         self.image_tile_summary(
             "random/sample", tf.to_float(random_image.sample()), rows=4, cols=4)
         self.image_tile_summary("random/mean", random_image.mean(), rows=4, cols=4)

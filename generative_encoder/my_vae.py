@@ -25,6 +25,8 @@ IMAGE_SHAPE = [28, 28, 1]
 
 flags.DEFINE_float(
     "learning_rate", default=0.001, help="Initial learning rate.")
+flags.DEFINE_float(
+    "lambda", default=50, help="Initial learning rate.")
 flags.DEFINE_integer(
     "max_steps", default=5001, help="Number of training steps to run.")
 flags.DEFINE_integer(
