@@ -121,7 +121,9 @@ class vae:
                 "elbo/importance_weighted": tf.metrics.mean(importance_weighted_elbo),
                 "rate": tf.metrics.mean(avg_rate),
                 "real_fake_rate": tf.metrics.mean(avg_rf_rate),
+                "distortion": tf.metrics.mean(avg_distortion)
             },
+
         )
 
 
