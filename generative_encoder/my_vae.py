@@ -38,7 +38,7 @@ flags.DEFINE_string(
     help="Activation function for all hidden layers.")
 flags.DEFINE_integer(
     "batch_size",
-    default=32,
+    default=16,
     help="Batch size.")
 flags.DEFINE_integer(
     "n_samples", default=16, help="Number of samples to use in encoding.")
