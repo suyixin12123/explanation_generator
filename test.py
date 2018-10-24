@@ -20,5 +20,5 @@ with sess.as_default():
 
 
 from tensorflow.contrib.learn.python.learn.datasets import mnist
-mnist_data = mnist.read_data_sets(reshape=False)
+mnist_data = mnist.read_data_sets(FLAGS.data_dir, reshape=False)
 print(mnist_data)
