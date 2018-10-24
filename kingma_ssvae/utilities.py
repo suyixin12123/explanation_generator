@@ -53,34 +53,41 @@ def preparing_data_image_semi(FLAGS):
     train_labels_labeled = train_labels[:train_labeled_num] 
 
     train_images_unlabeled = train_images[train_labeled_num:]
-    #unlabelled data's labels will also be transmited to model, but    
-    #won't be used.
-    train_labels_unlabeled = train_labels[train_labeled_num:]
 
-    training_dataset_labeled = \
-        tf.data.Dataset.from_tensor_slices((train_images_labeled, \
-                                            train_labels_labeled))
-    training_dataset_labeled = \
-        training_dataset_labeled.repeat().batch(FLAGS.batch_size)
-    train_labeled_input_fn = \
-        lambda: training_dataset_labeled.make_one_shot_iterator().get_next()
-    train_labeled_input_fn = \
-        lambda: training_dataset_labeled.make_one_shot_iterator().get_next()
+    #unused here.
+    #train_labels_unlabeled = train_labels[train_labeled_num:]
 
-    training_dataset_unlabeled = \
-        tf.data.Dataset.from_tensor_slices((train_images_unlabeled, \
-                                            train_labels_unlabeled))
-    training_dataset_unlabeled = \
-        training_dataset_unlabeled.repeat().batch(FLAGS.batch_size)
-    train_unlabeled_input_fn = \
-        lambda: training_dataset_unlabeled.make_one_shot_iterator().get_next()
+    training_dataset_labeled_image = \
+        tf.data.Dataset.from_tensor_slices((train_images_labeled))
+    training_dataset_labeled_image = \
+        training_dataset_labeled_image.repeat().batch(FLAGS.batch_size)
+
+    training_dataset_unlabeled_image = \
+        tf.data.Dataset.from_tensor_slices((train_images_unlabeled))
+    training_dataset_unlabeled_image = \
+        training_dataset_unlabeled_image.repeat().batch(FLAGS.batch_size)
+    
+    train_dataset_label = \
+        tf.data.Dataset.from_tensor_slices((train_labels_labeled))
+    train_dataset_label = \
+        train_dataset_label.repeat().batch(FLAGS.batch_size)
+    
+
+    train_labeled_image_fn = training_dataset_labeled_image.make_one_shot_iterator()
+    train_unlabeled_image_fn = training_dataset_unlabeled_image.make_one_shot_iterator()
+    train_labeled_labels_fn = train_dataset_label.make_one_shot_iterator()
+
 
     test_images = tf.manip.reshape(test_images, [-1, 28, 28, 1]) /255
-    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels))
-    test_dataset = test_dataset.batch(FLAGS.batch_size) 
-    test_input_fn = lambda: test_dataset.make_one_shot_iterator().get_next()
+    test_dataset_image = tf.data.Dataset.from_tensor_slices(test_images)
+    test_dataset_label = tf.data.Dataset.from_tensor_slices(test_labels)
+    test_dataset_image = test_dataset_image.batch(FLAGS.batch_size) 
+    test_dataset_label = test_dataset_label.batch(FLAGS.batch_size) 
 
-    return train_labeled_input_fn, train_unlabeled_input_fn, test_input_fn
+    test_image_fn = test_dataset_image.make_one_shot_iterator()
+    test_label_fn = test_dataset_label.make_one_shot_iterator()
+
+    return train_labeled_image_fn, train_unlabeled_image_fn, train_labeled_labels_fn, test_image_fn, test_label_fn
 
 
 

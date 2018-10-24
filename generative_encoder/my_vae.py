@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import functools
 import os, sys
-
 sys.path.append(os.path.relpath("../func"))
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
@@ -16,7 +15,7 @@ from tensorflow.app import flags
 import numpy as np
 import tensorflow as tf
 import utilities as ut
-from ss_model_fn import vae 
+from vae_model_fn import vae 
 
 import warnings
 warnings.filterwarnings("ignore",category=DeprecationWarning)
@@ -26,22 +25,6 @@ IMAGE_SHAPE = [28, 28, 1]
 
 flags.DEFINE_float(
     "learning_rate", default=0.001, help="Initial learning rate.")
-flags.DEFINE_float(
-    "classifier_scaler_param", 
-    default=20, 
-    help="scalar parameters of classifier loss")
-flags.DEFINE_float(
-    "kl_scalar_param", 
-    default=1, 
-    help="scalar parameters of KL divergence loss")
-flags.DEFINE_float(
-    "ae_scalar_param", 
-    default=1, 
-    help="scalar parameters of encoder-decoder loss")
-flags.DEFINE_float(
-    "labeled_data_rate", 
-    default=0.1, 
-    help="preparing the proportion of data that are labeled")
 flags.DEFINE_integer(
     "max_steps", default=5001, help="Number of training steps to run.")
 flags.DEFINE_integer(
@@ -81,7 +64,7 @@ flags.DEFINE_string(
     help="Directory where data is stored (if using real data).")
 flags.DEFINE_string(
     "model_dir",
-    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "ss_vae/"),
+    default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "eg_vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
     "viz_steps", default=100, help="Frequency at which to save visualizations.")
@@ -93,9 +76,6 @@ flags.DEFINE_bool(
     "delete_existing",
     default=False,
     help="If true, deletes existing `model_dir` directory.")
-flags.DEFINE_integer(
-    "num_labels", default=10, help="number of labels in dataset.")
-
 flags.DEFINE_string(
     "dataset",
     default="mnist",
@@ -103,25 +83,14 @@ flags.DEFINE_string(
           *. mnist    \
           *. fasion_mnist")
 
-flags.DEFINE_string(
-    "version",
-    default="ss_20181019_v1",
-    help="version of the work")
-
-
-
 FLAGS = flags.FLAGS
-
-print("version:", FLAGS.version)
 
 def main(argv):
     del argv  # unused
     print("begin to training...")
     params = FLAGS.flag_values_dict()
     params["activation"] = getattr(tf.nn, params["activation"])
-    train_input_fn, eval_input_fn = \
-        ut.preparing_data_image(FLAGS)
-
+    train_input_fn, eval_input_fn = ut.preparing_data_image(FLAGS)
     print("building the model...")
     vae_model = vae(IMAGE_SHAPE)
     model_fn = vae_model.model_fn

@@ -26,6 +26,22 @@ IMAGE_SHAPE = [28, 28, 1]
 
 flags.DEFINE_float(
     "learning_rate", default=0.001, help="Initial learning rate.")
+flags.DEFINE_float(
+    "classifier_scaler_param", 
+    default=20, 
+    help="scalar parameters of classifier loss")
+flags.DEFINE_float(
+    "kl_scalar_param", 
+    default=1, 
+    help="scalar parameters of KL divergence loss")
+flags.DEFINE_float(
+    "ae_scalar_param", 
+    default=1, 
+    help="scalar parameters of encoder-decoder loss")
+flags.DEFINE_float(
+    "labeled_data_rate", 
+    default=0.1, 
+    help="preparing the proportion of data that are labeled")
 flags.DEFINE_integer(
     "max_steps", default=5001, help="Number of training steps to run.")
 flags.DEFINE_integer(
