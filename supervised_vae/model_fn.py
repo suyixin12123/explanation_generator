@@ -14,7 +14,7 @@ class vae:
         tf.summary.image(name, ut.pack_images(tensor, rows, cols), max_outputs=1)
 
 
-    def model_fn(self, features, labels, mode, params, config):
+    def model_fn(self, features, o_labels, mode, params, config):
         """Builds the model function for use in an estimator.
 
         Arguments:
@@ -29,7 +29,7 @@ class vae:
             EstimatorSpec: A tf.estimator.EstimatorSpec instance.
         """
         del config
-        labels = tf.one_hot(labels, params["num_labels"])
+        labels = tf.one_hot(o_labels, params["num_labels"])
 
         if params["analytic_kl"] and params["mixture_components"] != 1:
             raise NotImplementedError(
@@ -96,7 +96,7 @@ class vae:
         tf.summary.scalar("classification loss", avg_classification_loss)
         
         code_predictions = code_posterior.sample()
-        accuracy = tf.metrics.accuracy(labels, code_predictions)
+        accuracy = tf.metrics.accuracy(o_labels, code_predictions)
         tf.summary.scalar("classification accuracy", accuracy)
 
         elbo_local = -(params["kl_scalar_param"] * rate + \
