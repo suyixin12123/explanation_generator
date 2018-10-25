@@ -42,7 +42,7 @@ def make_encoder(activation, latent_size, base_depth):
     # the second half used to generate diagonic covariance matrix
 
     def encoder(images):
-        images = 2 * tf.cast(images, dtype=tf.float32) - 1
+        images = tf.cast(images, dtype=tf.float32)
         net = encoder_net(images)
         return tfd.MultivariateNormalDiag(
             loc=net[..., :latent_size],
@@ -233,7 +233,7 @@ def make_classifier_cnn(activation, latent_size, base_depth, num_class):
     ])
 
     def classifier(images):
-        images = 2 * tf.cast(images, dtype=tf.float32) - 1
+        images = tf.cast(images, dtype=tf.float32)
         logits = classifier_net(images)
         return tfd.Categorical(
             logits=logits,
