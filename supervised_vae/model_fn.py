@@ -94,9 +94,8 @@ class vae:
         
         avg_classification_loss = tf.reduce_mean(classification_loss)
         tf.summary.scalar("classification loss", avg_classification_loss)
-        
         code_predictions = code_posterior.sample()
-        accuracy = tf.metrics.accuracy(labels, code_predictions)
+        accuracy = tf.metrics.accuracy(labels, code_predictions)[0]
         tf.summary.scalar("classification accuracy", accuracy)
 
         elbo_local = -(params["kl_scalar_param"] * rate + \
