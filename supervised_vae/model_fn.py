@@ -29,7 +29,6 @@ class vae:
             EstimatorSpec: A tf.estimator.EstimatorSpec instance.
         """
         del config
-
         labels = tf.one_hot(labels, params["num_labels"])
 
         if params["analytic_kl"] and params["mixture_components"] != 1:
@@ -60,8 +59,8 @@ class vae:
         the second one the input is image
         """
         #classifier_logits = classifier(tf.reduce_mean(approx_posterior_sample, 0))
-        code_proterior = classifier(features)
-        code_sample = code_proterior.sample(params["n_samples"])
+        code_posterior = classifier(features)
+        code_sample = code_posterior.sample(params["n_samples"])
         code_sample = tf.one_hot(code_sample, params["num_labels"])
         decoder_likelihood = decoder(approx_posterior_sample, \
             code_sample, params["num_labels"])
@@ -90,7 +89,7 @@ class vae:
         tf.summary.scalar("rate", avg_rate)
 
 
-        classification_loss = code_proterior.cross_entropy(
+        classification_loss = code_posterior.cross_entropy(
             tfd.Categorical(logits=labels)) 
         
         avg_classification_loss = tf.reduce_mean(classification_loss)
