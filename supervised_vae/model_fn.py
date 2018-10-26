@@ -114,8 +114,8 @@ class vae:
         random_image = decoder(latent_prior.sample(10), \
             [i for i in range(10)], params["num_labels"])
         self.image_tile_summary(
-            "random/sample", tf.to_float(random_image.sample()), rows=4, cols=4)
-        self.image_tile_summary("random/mean", random_image.mean(), rows=4, cols=4)
+            "random/sample", tf.to_float(random_image.sample()), rows=1, cols=10)
+        self.image_tile_summary("random/mean", random_image.mean(), rows=1, cols=10)
 
         # Perform variational inference by minimizing the -ELBO.
         global_step = tf.train.get_or_create_global_step()
