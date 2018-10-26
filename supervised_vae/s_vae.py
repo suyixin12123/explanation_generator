@@ -43,10 +43,10 @@ flags.DEFINE_float(
     default=0.1, 
     help="preparing the proportion of data that are labeled")
 flags.DEFINE_integer(
-    "max_steps", default=5001, help="Number of training steps to run.")
+    "max_steps", default=50001, help="Number of training steps to run.")
 flags.DEFINE_integer(
     "latent_size",
-    default=16,
+    default=100,
     help="Number of dimensions in the latent code (z).")
 flags.DEFINE_integer("base_depth", default=32, help="Base depth for layers.")
 flags.DEFINE_string(
@@ -61,7 +61,7 @@ flags.DEFINE_integer(
     "n_samples", default=16, help="Number of samples to use in encoding.")
 flags.DEFINE_integer(
     "mixture_components",
-    default=100,
+    default=1,
     help="Number of mixture components to use in the prior. Each component is "
          "a diagonal normal distribution. The parameters of the components are "
          "intialized randomly, and then learned along with the rest of the "
@@ -69,7 +69,7 @@ flags.DEFINE_integer(
          "set to `1`.")
 flags.DEFINE_bool(
     "analytic_kl",
-    default=False,
+    default=True,
     help="Whether or not to use the analytic version of the KL. When set to "
          "False the E_{Z~q(Z|X)}[log p(Z)p(X|Z) - log q(Z|X)] form of the ELBO "
          "will be used. Otherwise the -KL(q(Z|X) || p(Z)) + "
@@ -84,7 +84,7 @@ flags.DEFINE_string(
     default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "s_vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
-    "viz_steps", default=100, help="Frequency at which to save visualizations.")
+    "viz_steps", default=2000, help="Frequency at which to save visualizations.")
 flags.DEFINE_bool(
     "fake_data",
     default=False,
