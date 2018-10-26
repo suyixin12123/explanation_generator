@@ -80,8 +80,6 @@ def make_encoder_joint_input(activation, latent_size, base_depth):
         codes = tf.one_hot(codes, num_labels)
         code_encoding = code_net(codes) 
         concat_tensor = tf.keras.layers.concatenate([image_encoding, code_encoding], 1)
-        print(concat_tensor)
-        exit()
         combined_net = tf.keras.Sequential([
             tf.keras.layers.Dense(512, activation=activation),
             tf.keras.layers.Dense(2 * latent_size, activation=None),
