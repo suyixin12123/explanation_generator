@@ -27,10 +27,6 @@ IMAGE_SHAPE = [28, 28, 1]
 flags.DEFINE_float(
     "learning_rate", default=0.001, help="Initial learning rate.")
 flags.DEFINE_float(
-    "classifier_scaler_param", 
-    default=20, 
-    help="scalar parameters of classifier loss")
-flags.DEFINE_float(
     "kl_scalar_param", 
     default=1, 
     help="scalar parameters of KL divergence loss")
@@ -43,10 +39,10 @@ flags.DEFINE_float(
     default=0.1, 
     help="preparing the proportion of data that are labeled")
 flags.DEFINE_integer(
-    "max_steps", default=5001, help="Number of training steps to run.")
+    "max_steps", default=50001, help="Number of training steps to run.")
 flags.DEFINE_integer(
     "latent_size",
-    default=16,
+    default=100,
     help="Number of dimensions in the latent code (z).")
 flags.DEFINE_integer("base_depth", default=32, help="Base depth for layers.")
 flags.DEFINE_string(
@@ -84,7 +80,7 @@ flags.DEFINE_string(
     default=os.path.join(os.getenv("TEST_TMPDIR", "/tmp"), "hs_vae/"),
     help="Directory to put the model's fit.")
 flags.DEFINE_integer(
-    "viz_steps", default=100, help="Frequency at which to save visualizations.")
+    "viz_steps", default=2000, help="Frequency at which to save visualizations.")
 flags.DEFINE_bool(
     "fake_data",
     default=False,
