@@ -51,56 +51,6 @@ def make_encoder(activation, latent_size, base_depth):
     #encoder returns a multivariate normal distribution
     return encoder
 
-       
-def make_encoder_joint_input(activation, latent_size, base_depth):
-    """Creates the encoder function.
-
-    Args:
-        activation: Activation function in hidden layers.
-        latent_size: The dimensionality of the encoding.
-        base_depth: The lowest depth for a layer.
-
-    Returns:
-        encoder: A `callable` mapping a `Tensor` of images to a
-        `tfd.Distribution` instance over encodings.
-    """
-    conv = functools.partial(
-        tf.keras.layers.Conv2D, padding="SAME", activation=activation)
-
-    image_net = tf.keras.Sequential([
-        tf.keras.layers.Flatten(),
-    ])
-
-    code_net = tf.keras.Sequential([
-        tf.keras.layers.Flatten()
-    ])
-
-    def encoder_net(images, codes, num_labels):
-        image_encoding = image_net(images)
-        codes = tf.one_hot(codes, num_labels)
-        code_encoding = code_net(codes) 
-        concat_tensor = tf.keras.layers.concatenate([image_encoding, code_encoding], 1)
-        combined_net = tf.keras.Sequential([
-            tf.keras.layers.Dense(512, activation=activation),
-            tf.keras.layers.Dense(2 * latent_size, activation=None),
-        ])
-
-        return combined_net(concat_tensor)
-
-    #output the 2 * latent_size because that first half used to generate mean, 
-    # the second half used to generate diagonic covariance matrix
-    #codes can be shape of (None,)
-    def encoder(images,codes, num_labels):
-        images = tf.cast(images, dtype=tf.float32)
-        net = encoder_net(images, codes, num_labels)
-        return tfd.MultivariateNormalDiag(
-            loc=net[..., :latent_size],
-            scale_diag=tf.nn.softplus(net[..., latent_size:] +
-                                    ut._softplus_inverse(1.0)),
-            name="latent_representation")
-    #encoder returns a multivariate normal distribution
-    return encoder
-
 def make_decoder(activation, latent_size, output_shape, base_depth):
     """Creates the decoder function.
 
@@ -144,6 +94,39 @@ def make_decoder(activation, latent_size, output_shape, base_depth):
     return decoder
 
 
+       
+def make_encoder_joint_input(activation, latent_size, base_depth):
+    """Creates the encoder function.
+
+    Args:
+        activation: Activation function in hidden layers.
+        latent_size: The dimensionality of the encoding.
+        base_depth: The lowest depth for a layer.
+        encoder: A `callable` mapping a `Tensor` of images to a
+        `tfd.Distribution` instance over encodings.
+    """
+
+    encoder_net = tf.keras.Sequential([
+        tf.keras.layers.Dense(512, activation=activation),
+        tf.keras.layers.Dense(2 * latent_size, activation=None),
+    ])
+
+    #codes can be shape of (None,)
+    def encoder(images,labels, num_labels):
+        images = tf.cast(images, dtype=tf.float32)
+        image_input = tf.reshape(images, [-1, 784])
+        label_input = tf.one_hot(labels, num_labels)
+        encoder_input = tf.concat(image_input, label_input)
+        net = encoder_net(encoder_input)
+        return tfd.MultivariateNormalDiag(
+            loc=net[..., :latent_size],
+            scale_diag=tf.nn.softplus(net[..., latent_size:] +
+                                    ut._softplus_inverse(1.0)),
+            name="latent_representation")
+    #encoder returns a multivariate normal distribution
+    return encoder
+
+
 def make_decoder_joint_input(activation, latent_size, output_shape, base_depth):
     """Creates the decoder function.
 
@@ -157,33 +140,21 @@ def make_decoder_joint_input(activation, latent_size, output_shape, base_depth):
         decoder: A `callable` mapping a `Tensor` of encodings to a
         `tfd.Distribution` instance over images.
     """
-    deconv = functools.partial(
-        tf.keras.layers.Conv2DTranspose, padding="SAME", activation=activation)
-    conv = functools.partial(
-        tf.keras.layers.Conv2D, padding="SAME", activation=activation)
 
     decoder_net = tf.keras.Sequential([
-        #deconv(2 * base_depth, 7, padding="VALID"),
-        #deconv(2 * base_depth, 5),
-        #deconv(2 * base_depth, 5, 2),
-        #deconv(base_depth, 5),
-        #deconv(base_depth, 5, 2),
-        #deconv(base_depth, 5),
-        #conv(output_shape[-1], 5, activation=None),
         tf.keras.layers.Dense(128, activation=activation),
         tf.keras.layers.Dense(784, activation=None),
     ])
 
-    def decoder(codes, disentangled_vec, disentangled_vec_length):
-        original_shape = tf.shape(codes)
+    def decoder(latent_rep, labels, num_labels):
+        original_shape = tf.shape(latent_rep)
         # Collapse the sample and batch dimension and convert to rank-4 tensor for
         # use with a convolutional decoder network.
-        codes = tf.reshape(codes, (-1, latent_size))
-
-        disentangled_vec = tf.reshape(disentangled_vec, \
-                        (-1, disentangled_vec_length))
+        latent_rep = tf.reshape(latent_rep, (-1, latent_size))
+        labels = tf.one_hot(labels, num_labels)
+        labels = tf.reshape(labels, (-1, num_labels))
         
-        decoder_input = tf.concat([codes, disentangled_vec], -1)
+        decoder_input = tf.concat([latent_rep, labels], -1)
         logits = decoder_net(decoder_input)
         logits = tf.reshape(
             logits, shape=tf.concat([original_shape[:-1], output_shape], axis=0))

@@ -58,10 +58,10 @@ class vae:
         #code_posterior = classifier(features)
         #code_sample = code_posterior.sample(params["n_samples"])
         #code_sample = tf.one_hot(code_sample, params["num_labels"])
-        code_sample = tf.one_hot(tfd.Categorical(logits=tf.cast(onehot_labels, tf.float32)).sample(params["n_samples"]), params['num_labels'])
+        #code_sample = tf.one_hot(tfd.Categorical(logits=tf.cast(onehot_labels, tf.float32)).sample(params["n_samples"]), params['num_labels'])
 
         decoder_likelihood = decoder(approx_posterior_sample, \
-            code_sample, params["num_labels"])
+            labels, params["num_labels"])
         self.image_tile_summary(
             "recon/sample",
             tf.to_float(decoder_likelihood.sample()[:3, :16]),
@@ -100,7 +100,7 @@ class vae:
 
         # Decode samples from the prior for visualization.
         random_image = decoder(latent_prior.sample(16), \
-            tf.one_hot([2 for i in range(16)], params["num_labels"]), params["num_labels"])
+            [8 for i in range(16)], params["num_labels"])
         self.image_tile_summary(
             "random/sample", tf.to_float(random_image.sample()), rows=4, cols=4)
         self.image_tile_summary("random/mean", random_image.mean(), rows=4, cols=4)
