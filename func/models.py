@@ -29,12 +29,13 @@ def make_encoder(activation, latent_size, base_depth):
         tf.keras.layers.Conv2D, padding="SAME", activation=activation)
 
     encoder_net = tf.keras.Sequential([
-        conv(base_depth, 5, 1),
-        conv(base_depth, 5, 2),
-        conv(2 * base_depth, 5, 1),
-        conv(2 * base_depth, 5, 2),
-        conv(4 * latent_size, 7, padding="VALID"),
+        #conv(base_depth, 5, 1),
+        #conv(base_depth, 5, 2),
+        #conv(2 * base_depth, 5, 1),
+        #conv(2 * base_depth, 5, 2),
+        #conv(4 * latent_size, 7, padding="VALID"),
         tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(512, activation=activation),
         tf.keras.layers.Dense(2 * latent_size, activation=None),
     ])
     #output the 2 * latent_size because that first half used to generate mean, 
