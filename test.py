@@ -4,6 +4,15 @@ import numpy as np
 
 
 tfd = tfp.distributions
+
+codes = tf.one_hot([2 for i in range(16)], 10) 
+
+codes = tf.reshape(codes, (-1, 1, 1, 10))
+
+
+sess = tf.Session()
+with sess.as_default():
+    print(codes.eval())
 """
 p = [[0.6, 0.2,0.5,1.2],[0.01, 0.02 ,12, 0.01]]
 ohc = tfd.Categorical(logits=p)

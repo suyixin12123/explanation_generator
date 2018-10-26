@@ -13,7 +13,6 @@ import tensorflow_probability as tfp
 import utilities as ut 
 tfd = tfp.distributions
 
-        
 def make_encoder(activation, latent_size, base_depth):
     """Creates the encoder function.
 
@@ -44,6 +43,60 @@ def make_encoder(activation, latent_size, base_depth):
     def encoder(images):
         images = tf.cast(images, dtype=tf.float32)
         net = encoder_net(images)
+        return tfd.MultivariateNormalDiag(
+            loc=net[..., :latent_size],
+            scale_diag=tf.nn.softplus(net[..., latent_size:] +
+                                    ut._softplus_inverse(1.0)),
+            name="latent_representation")
+    #encoder returns a multivariate normal distribution
+    return encoder
+
+       
+def make_encoder_joint_input(activation, latent_size, base_depth):
+    """Creates the encoder function.
+
+    Args:
+        activation: Activation function in hidden layers.
+        latent_size: The dimensionality of the encoding.
+        base_depth: The lowest depth for a layer.
+
+    Returns:
+        encoder: A `callable` mapping a `Tensor` of images to a
+        `tfd.Distribution` instance over encodings.
+    """
+    conv = functools.partial(
+        tf.keras.layers.Conv2D, padding="SAME", activation=activation)
+
+    image_net = tf.keras.Sequential([
+        conv(base_depth, 5, 1),
+        conv(base_depth, 5, 2),
+        conv(2 * base_depth, 5, 1),
+        conv(2 * base_depth, 5, 2),
+        conv(4 * latent_size, 7, padding="VALID"),
+        tf.keras.layers.Flatten(),
+    ])
+
+    code_net = tf.keras.Sequential([
+        tf.keras.layers.Flatten()
+    ])
+
+    def encoder_net(images, codes, num_labels):
+        image_encoding = image_net(images)
+        codes = tf.one_hot(codes, num_labels)
+        code_encoding = code_net(codes) 
+        concat_tensor = tf.keras.layers.concatenate([image_encoding, code_encoding], 1)
+        combined_net = tf.keras.Sequential([
+            tf.keras.layers.Dense(2 * latent_size, activation=None),
+        ])
+
+        return combined_net(concat_tensor)
+
+    #output the 2 * latent_size because that first half used to generate mean, 
+    # the second half used to generate diagonic covariance matrix
+    #codes can be shape of (None,)
+    def encoder(images,codes, num_labels):
+        images = tf.cast(images, dtype=tf.float32)
+        net = encoder_net(images, codes, num_labels)
         return tfd.MultivariateNormalDiag(
             loc=net[..., :latent_size],
             scale_diag=tf.nn.softplus(net[..., latent_size:] +
