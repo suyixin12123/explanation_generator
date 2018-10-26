@@ -116,7 +116,7 @@ def make_encoder_joint_input(activation, latent_size, base_depth):
         images = tf.cast(images, dtype=tf.float32)
         image_input = tf.reshape(images, [-1, 784])
         label_input = tf.one_hot(labels, num_labels)
-        encoder_input = tf.concat(image_input, label_input)
+        encoder_input = tf.concat([image_input, label_input], -1 )
         net = encoder_net(encoder_input)
         return tfd.MultivariateNormalDiag(
             loc=net[..., :latent_size],
