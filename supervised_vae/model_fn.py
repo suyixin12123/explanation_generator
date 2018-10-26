@@ -1,4 +1,4 @@
-from models import make_encoder_joint_input, make_decoder_joint_input, make_mixture_prior, make_classifier_cnn
+from models import make_encoder, make_encoder_joint_input, make_decoder_joint_input, make_mixture_prior, make_classifier_cnn
 import utilities as ut
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -36,7 +36,8 @@ class vae:
                 "Using `analytic_kl` is only supported when `mixture_components = 1` "
                 "since there's no closed form otherwise.")
 
-        encoder = make_encoder_joint_input(params["activation"],
+        #encoder = make_encoder_joint_input(params["activation"],
+        encoder = make_encoder(params["activation"],
                                 params["latent_size"],
                                 params["base_depth"])
         decoder = make_decoder_joint_input(params["activation"],
@@ -52,7 +53,8 @@ class vae:
 
         self.image_tile_summary("input", tf.to_float(features), rows=1, cols=16)
 
-        approx_posterior = encoder(features,labels, params["num_labels"])
+        #approx_posterior = encoder(features,labels, params["num_labels"])
+        approx_posterior = encoder(features)
         approx_posterior_sample = approx_posterior.sample()
         """
         the first one the input is latent reprentation
