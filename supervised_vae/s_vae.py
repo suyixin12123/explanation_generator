@@ -32,11 +32,11 @@ flags.DEFINE_float(
     help="scalar parameters of classifier loss")
 flags.DEFINE_float(
     "kl_scalar_param", 
-    default=0, 
+    default=1, 
     help="scalar parameters of KL divergence loss")
 flags.DEFINE_float(
     "ae_scalar_param", 
-    default=0, 
+    default=1, 
     help="scalar parameters of encoder-decoder loss")
 flags.DEFINE_float(
     "labeled_data_rate", 
