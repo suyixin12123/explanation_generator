@@ -49,7 +49,7 @@ class vae:
         self.image_tile_summary("input", tf.to_float(features), rows=1, cols=16)
 
         approx_posterior = encoder(features, labels, params["num_labels"])
-        approx_posterior_sample = approx_posterior.sample(params["n_samples"])
+        approx_posterior_sample = approx_posterior.sample()
         """
         the first one the input is latent reprentation
         the second one the input is image
@@ -59,7 +59,6 @@ class vae:
         #code_sample = code_posterior.sample(params["n_samples"])
         #code_sample = tf.one_hot(code_sample, params["num_labels"])
         #code_sample = tf.one_hot(tfd.Categorical(logits=tf.cast(onehot_labels, tf.float32)).sample(params["n_samples"]), params['num_labels'])
-
         decoder_likelihood = decoder(approx_posterior_sample, \
             labels, params["num_labels"])
         self.image_tile_summary(

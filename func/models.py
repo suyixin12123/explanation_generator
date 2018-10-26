@@ -107,8 +107,8 @@ def make_encoder_joint_input(activation, latent_size, base_depth):
     """
 
     encoder_net = tf.keras.Sequential([
-        tf.keras.layers.Dense(512, activation=activation),
-        tf.keras.layers.Dense(2 * latent_size, activation=None),
+        tf.keras.layers.Dense(128, activation=activation),
+        tf.keras.layers.Dense(2 * latent_size, activation=None)
     ])
 
     #codes can be shape of (None,)
