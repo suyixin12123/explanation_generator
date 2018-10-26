@@ -221,23 +221,27 @@ def make_classifier_cnn(activation, latent_size, base_depth, num_class):
     """
     conv = functools.partial(
         tf.keras.layers.Conv2D, padding="SAME", activation=activation)
+        #tfp.layers.Convolution2DReparameterization, padding="SAME", activation=activation)
 
     classifier_net = tf.keras.Sequential([
-        conv(base_depth, 5, 1),
-        conv(base_depth, 5, 2),
-        conv(2 * base_depth, 5, 1),
-        conv(2 * base_depth, 5, 2),
-        conv(4 * latent_size, 7, padding="VALID"),
+        #tf.keras.layers.Reshape([28,28,1]),
+        #conv(base_depth, 5, 1),
+        #conv(2 * base_depth, 5, 1),
+        #conv(4 * latent_size, 7, padding="VALID"),
+
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(num_class, activation=None),
+        #tfp.layers.DenseReparameterization(num_class),
+        tf.keras.layers.Dense(num_class),
     ])
 
     def classifier(images):
         images = tf.cast(images, dtype=tf.float32)
         logits = classifier_net(images)
-        return tfd.Categorical(
+        prob_logits = tfd.Categorical(
             logits=logits,
-            name="code")
- 
+            name="code_dist"
+        )
+        return prob_logits
+
     return classifier 
 
