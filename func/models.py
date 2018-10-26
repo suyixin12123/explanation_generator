@@ -163,25 +163,27 @@ def make_decoder_joint_input(activation, latent_size, output_shape, base_depth):
         tf.keras.layers.Conv2D, padding="SAME", activation=activation)
 
     decoder_net = tf.keras.Sequential([
-        deconv(2 * base_depth, 7, padding="VALID"),
-        deconv(2 * base_depth, 5),
-        deconv(2 * base_depth, 5, 2),
-        deconv(base_depth, 5),
-        deconv(base_depth, 5, 2),
-        deconv(base_depth, 5),
-        conv(output_shape[-1], 5, activation=None),
+        #deconv(2 * base_depth, 7, padding="VALID"),
+        #deconv(2 * base_depth, 5),
+        #deconv(2 * base_depth, 5, 2),
+        #deconv(base_depth, 5),
+        #deconv(base_depth, 5, 2),
+        #deconv(base_depth, 5),
+        #conv(output_shape[-1], 5, activation=None),
+        tf.keras.layers.Dense(128, activation=activation),
+        tf.keras.layers.Dense(784, activation=None),
     ])
 
     def decoder(codes, disentangled_vec, disentangled_vec_length):
         original_shape = tf.shape(codes)
         # Collapse the sample and batch dimension and convert to rank-4 tensor for
         # use with a convolutional decoder network.
-        codes = tf.reshape(codes, (-1, 1, 1, latent_size))
+        codes = tf.reshape(codes, (-1, latent_size))
 
         disentangled_vec = tf.reshape(disentangled_vec, \
-                        (-1, 1, 1, disentangled_vec_length))
+                        (-1, disentangled_vec_length))
         
-        decoder_input = tf.concat([codes, disentangled_vec], 3)
+        decoder_input = tf.concat([codes, disentangled_vec], -1)
         logits = decoder_net(decoder_input)
         logits = tf.reshape(
             logits, shape=tf.concat([original_shape[:-1], output_shape], axis=0))
