@@ -66,13 +66,13 @@ class vae:
             labels, params["num_labels"])
         self.image_tile_summary(
             "recon/sample",
-            tf.to_float(decoder_likelihood.sample()[:3, :16]),
-            rows=3,
+            tf.to_float(decoder_likelihood.sample()[:, :16]),
+            rows=1,
             cols=16)
         self.image_tile_summary(
             "recon/mean",
-            decoder_likelihood.mean()[:3, :16],
-            rows=3,
+            decoder_likelihood.mean()[:1, :16],
+            rows=1,
             cols=16)
 
         # `distortion` is just the negative log likelihood.
