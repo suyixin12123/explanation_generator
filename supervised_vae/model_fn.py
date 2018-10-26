@@ -111,8 +111,8 @@ class vae:
         tf.summary.scalar("elbo/importance_weighted", importance_weighted_elbo)
 
         # Decode samples from the prior for visualization.
-        random_image = decoder(latent_prior.sample(16), \
-            [5 for i in range(16)], params["num_labels"])
+        random_image = decoder(latent_prior.sample(10), \
+            [i for i in range(10)], params["num_labels"])
         self.image_tile_summary(
             "random/sample", tf.to_float(random_image.sample()), rows=4, cols=4)
         self.image_tile_summary("random/mean", random_image.mean(), rows=4, cols=4)
